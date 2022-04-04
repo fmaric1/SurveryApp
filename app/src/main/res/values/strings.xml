@@ -1,3 +1,16 @@
 <resources>
-    <string name="app_name">RMA22</string>
+    <string name="app_name">rma21projekat</string>
+    <string name="odaberite_godinu">Odaberite godinu:</string>
+    <string name="odaberite_istrazivanje">Odaberite istraživanje:</string>
+    <string name="odaberite_grupu">Odaberite grupu:</string>
+    <string name="upisi_me">Upiši me</string>
+    <array name="spinner">
+        <item>Sve moje ankete</item>
+        <item>Sve ankete</item>
+        <item>Urađene ankete</item>
+        <item>Buduće ankete</item>
+        <item>Prošle ankete</item>
+    </array>
+    <string name="title_activity_upis_predmet">UpisPredmet</string>
+
 </resources>
