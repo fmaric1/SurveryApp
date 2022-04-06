@@ -26,8 +26,8 @@ class AnketaListViewModel : Serializable{
         return AnketaRepository.getNotTaken()
     }
 
-    fun getIstrazivanja(): List<Istrazivanje> {
-        return IstrazivanjeRepository.getAll()
+    fun getUpisanaIstrazivanja(): List<Istrazivanje> {
+        return IstrazivanjeRepository.getUpisani()
     }
 
     fun getIstrazivanjaByGodina(godina: Int): List<Istrazivanje>{

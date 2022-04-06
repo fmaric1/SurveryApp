@@ -32,6 +32,7 @@ class IstrazivanjeRepository {
             return filtriranaIstrazivanja.toList()
         }
 
+
         fun upisiIstrazivanje(Istrazivanje: Istrazivanje) {
             istrazivanja.add(Istrazivanje.naziv)
             istrazivanja.distinct()

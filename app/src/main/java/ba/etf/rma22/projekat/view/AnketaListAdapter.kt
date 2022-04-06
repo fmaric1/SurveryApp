@@ -26,22 +26,42 @@ class AnketaListAdapter(private var ankete: List<Anketa>) : RecyclerView.Adapter
     override fun onBindViewHolder(holder: AnketeViewHolder, position: Int) {
         val anketa = ankete[position]
         var datum = anketa.datumKraj
+        var datumText = "Anketa urađena: "
+        var progressInt = 0
         when(anketa.status){
             statusAnkete.AKTIVAN_URADEN -> {
                 holder.status.setImageResource(R.drawable.plava)
-                datum = anketa.datumRada!!
             }
-            statusAnkete.AKTIVAN_NIJE_URADEN -> holder.status.setImageResource(R.drawable.zelena)
+            statusAnkete.AKTIVAN_NIJE_URADEN -> {
+                holder.status.setImageResource(R.drawable.zelena)
+                datumText = "Vrijeme zatvaranja: "
+            }
             statusAnkete.NEAKTIVAN -> {
                 holder.status.setImageResource(R.drawable.zuta)
                 datum = anketa.datumPocetka
+                datumText = "Vrijeme aktiviranja: "
             }
-            statusAnkete.PROSAO -> holder.status.setImageResource(R.drawable.crvena)
+            statusAnkete.PROSAO ->{
+                holder.status.setImageResource(R.drawable.crvena)
+                datumText = "Anketa zatvorena: "
+            }
         }
+        if(anketa.progress<0.1)
+            progressInt = 0
+        else if(anketa.progress>=0.1 && anketa.progress<0.3)
+            progressInt = 20
+        else if(anketa.progress>=0.3 && anketa.progress<0.5)
+            progressInt = 40
+        else if(anketa.progress>=0.5 && anketa.progress<0.7)
+            progressInt = 60
+        else if(anketa.progress>=0.7 && anketa.progress<1.0)
+            progressInt = 80
+        else if(anketa.progress>=1.0)
+            progressInt = 100
         holder.imeKviza.text = anketa.naziv
-        holder.datum.text = datum.date.toString()+"."+ (datum.month +1).toString() + "." + (datum.year + 1900).toString()
+        holder.datum.text = datumText + datum.date.toString()+"."+ (datum.month +1).toString() + "." + (datum.year + 1900).toString()
         holder.imePredmeta.text = anketa.nazivIstrazivanja
-        holder.progressBar.progress = (anketa.progress*100).toInt()
+        holder.progressBar.progress = progressInt
 
     }
     fun updateAnkete(ankete: List<Anketa>) {

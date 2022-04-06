@@ -44,6 +44,7 @@ class UpisIstrazivanje : AppCompatActivity() {
 
                     istrazivanja.add("")
                     for (x in data) {
+                        if(!anketaListViewModel.getUpisanaIstrazivanja().contains(x))
                         istrazivanja.add(x.naziv)
                     }
 
