@@ -10,7 +10,7 @@ class GrupaRepository {
         }
 
         fun getGroupsByIstrazivanja(nazivIstrazivanja: String): List<Grupa> {
-            return getGrupe().filter{it.nazivPredmeta.equals(nazivIstrazivanja)}
+            return getGrupe().filter{it.nazivIstrazivanja.equals(nazivIstrazivanja)}
         }
     }
 }
