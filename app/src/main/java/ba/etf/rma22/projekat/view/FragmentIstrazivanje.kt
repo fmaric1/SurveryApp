@@ -46,7 +46,7 @@ class FragmentIstrazivanje : Fragment() {
         istrazivanjeSpinner = view.findViewById(R.id.odabirIstrazivanja)
         grupaSpinner = view.findViewById(R.id.odabirGrupa)
         upisDugme = view.findViewById(R.id.dodajIstrazivanjeDugme)
-        var godine = listOf<String>(" ", "1", "2", "3", "4", "5")
+        val godine = listOf<String>(" ", "1", "2", "3", "4", "5")
         godinaSpinner.adapter = ArrayAdapter<String>(
                 activity?.baseContext!!,
                 android.R.layout.simple_spinner_item,
@@ -57,12 +57,7 @@ class FragmentIstrazivanje : Fragment() {
 
             }
 
-            override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-            ) {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val istrazivanja: ArrayList<String> = ArrayList()
                 if(position ==0)
                     upisDugme.isEnabled = false
@@ -107,7 +102,6 @@ class FragmentIstrazivanje : Fragment() {
                             )
                             grupaSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
                                 override fun onNothingSelected(parent: AdapterView<*>?) {
-                                    TODO("Not yet implemented")
                                 }
 
                                 override fun onItemSelected(

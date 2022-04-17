@@ -3,9 +3,11 @@ package ba.etf.rma22.projekat.ViewModel
 import ba.etf.rma22.projekat.data.models.Anketa
 import ba.etf.rma22.projekat.data.models.Grupa
 import ba.etf.rma22.projekat.data.models.Istrazivanje
+import ba.etf.rma22.projekat.data.models.Pitanje
 import ba.etf.rma22.projekat.data.repositories.GrupaRepository
 import ba.etf.rma22.projekat.data.repositories.AnketaRepository
 import ba.etf.rma22.projekat.data.repositories.IstrazivanjeRepository
+import ba.etf.rma22.projekat.data.repositories.PitanjaAnketaRepository
 import java.io.Serializable
 
 class AnketaListViewModel : Serializable{
@@ -42,6 +44,10 @@ class AnketaListViewModel : Serializable{
         AnketaRepository.upisiStudenta(grupa)
         IstrazivanjeRepository.upisiIstrazivanje(istrazivanje)
 
+    }
+
+    fun getPitanjaAnkete(nazivAnkete: String, nazivIstrazivanja: String): List<Pitanje>{
+        return PitanjaAnketaRepository.getPitanja(nazivAnkete, nazivIstrazivanja )
     }
 
 }

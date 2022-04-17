@@ -8,12 +8,14 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import ba.etf.rma22.projekat.MainActivity
 import ba.etf.rma22.projekat.R
 import ba.etf.rma22.projekat.ViewModel.AnketaListViewModel
+import ba.etf.rma22.projekat.data.models.statusAnkete
 
 private const val ARG_PARAM1 = "param1"
 
@@ -47,6 +49,30 @@ class FragmentAnkete : Fragment() {
         spinner.setAdapter(adapter)
         ankete.layoutManager = GridLayoutManager(activity, 2)
         anketeAdapter = AnketaListAdapter(listOf())
+        anketeAdapter.setOnItemClickListener(object : AnketaListAdapter.onItemClickListener{
+            override fun onItemClick(position: Int) {
+                if(position < anketaListViewModel.getMyAnkete().size ) {
+                    val izabranaAnketa =anketaListViewModel.getMyAnkete().get(position)
+                    if(izabranaAnketa.status == statusAnkete.AKTIVAN_NIJE_URADEN) {
+                        val pitanjaAnkete = anketaListViewModel.getPitanjaAnkete(
+                            izabranaAnketa.naziv,
+                            izabranaAnketa.nazivIstrazivanja
+                        )
+                        var fragmentiPitanja: MutableList<Fragment> = mutableListOf()
+                        for (x in pitanjaAnkete) {
+                            val fragment = FragmentPitanje.newInstance()
+                            fragment.getArgs(x)
+                            fragmentiPitanja.add(fragment)
+                        }
+                        val fragment = FragmentPredaj()
+                        fragment.getArgs(izabranaAnketa)
+                        fragmentiPitanja.add(fragment)
+                        (activity as MainActivity).openAnketa(fragmentiPitanja)
+                    }
+                }
+            }
+
+        })
         ankete.adapter = anketeAdapter
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -67,7 +93,10 @@ class FragmentAnkete : Fragment() {
 
         }
 
+
     }
+
+
 
     override fun onResume() {
         (activity as MainActivity).refreshSecondFragmentBack()

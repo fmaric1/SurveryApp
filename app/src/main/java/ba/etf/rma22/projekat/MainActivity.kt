@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 import ba.etf.rma22.projekat.view.FragmentAnkete
 import ba.etf.rma22.projekat.view.ViewPagerAdapter
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_ankete.*
 
 
@@ -49,6 +50,23 @@ class MainActivity : AppCompatActivity() {
         Handler(Looper.getMainLooper()).postDelayed({
             viewPagerAdapter.refreshFragment(1,FragmentIstrazivanje())
         }, 0)
+    }
+
+    public fun openAnketa(fragmentiPitanja: List<Fragment>){
+        viewPagerAdapter = ViewPagerAdapter(supportFragmentManager, fragmentiPitanja.toMutableList(), lifecycle)
+        viewPager.adapter = viewPagerAdapter
+    }
+
+    public fun closeAnketa(){
+        val fragments =
+            mutableListOf(
+                FragmentAnkete(),
+                FragmentIstrazivanje()
+            )
+
+        viewPager.offscreenPageLimit = 2
+        viewPagerAdapter = ViewPagerAdapter(supportFragmentManager, fragments, lifecycle)
+        viewPager.adapter = viewPagerAdapter
     }
 
 }
