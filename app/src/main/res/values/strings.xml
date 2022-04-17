@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">rma21projekat</string>
+    <string name="app_name">rma22</string>
     <string name="odaberite_godinu">Odaberite godinu:</string>
     <string name="odaberite_istrazivanje">Odaberite istraživanje:</string>
     <string name="odaberite_grupu">Odaberite grupu:</string>
@@ -12,5 +12,7 @@
         <item>Prošle ankete</item>
     </array>
     <string name="title_activity_upis_predmet">UpisPredmet</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>
