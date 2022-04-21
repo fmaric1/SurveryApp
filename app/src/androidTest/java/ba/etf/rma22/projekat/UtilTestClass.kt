@@ -1,32 +1,28 @@
-@file:Suppress("PackageDirectoryMismatch")
 package ba.etf.rma22.projekat
 
+import android.graphics.drawable.ColorDrawable
 import android.view.View
-import android.widget.ImageView
-import androidx.annotation.DrawableRes
-import androidx.core.graphics.drawable.toBitmap
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.NoMatchingViewException
 import androidx.test.espresso.ViewAssertion
 import androidx.test.espresso.contrib.RecyclerViewActions
-import androidx.test.espresso.matcher.BoundedMatcher
 import androidx.test.espresso.matcher.ViewMatchers
 import ba.etf.rma22.projekat.data.models.Anketa
-import junit.framework.Assert
+import junit.framework.Assert.assertTrue
 import org.hamcrest.CoreMatchers
 import org.hamcrest.Description
-import org.hamcrest.Matcher
 import org.hamcrest.TypeSafeMatcher
 
 class UtilTestClass {
-    companion object {
+    companion object{
         fun hasItemCount(n: Int) = object : ViewAssertion {
             override fun check(view: View?, noViewFoundException: NoMatchingViewException?) {
                 if (noViewFoundException != null) {
                     throw noViewFoundException
                 }
-                Assert.assertTrue("View nije tipa RecyclerView", view is RecyclerView)
+                assertTrue("View nije tipa RecyclerView", view is RecyclerView)
                 var rv: RecyclerView = view as RecyclerView
                 ViewMatchers.assertThat(
                     "GetItemCount RecyclerView broj elementa: ",
@@ -36,19 +32,8 @@ class UtilTestClass {
             }
 
         }
-        fun withDrawable(@DrawableRes id: Int) = object : TypeSafeMatcher<View>() {
-            override fun describeTo(description: Description) {
-                description.appendText("ImageView with drawable same as drawable with id $id")
-            }
 
-            override fun matchesSafely(view: View): Boolean {
-                val context = view.context
-                val expectedBitmap = context.getDrawable(id)?.toBitmap()
-
-                return view is ImageView && view.drawable.toBitmap().sameAs(expectedBitmap)
-            }
-        }
-        fun itemTest(id: Int, k: Anketa) {
+        fun itemTest(id:Int, k: Anketa){
             Espresso.onView(ViewMatchers.withId(R.id.listaAnketa)).perform(
                 RecyclerViewActions.scrollTo<RecyclerView.ViewHolder>(
                     CoreMatchers.allOf(
@@ -56,51 +41,31 @@ class UtilTestClass {
                         ViewMatchers.hasDescendant(ViewMatchers.withText(k.nazivIstrazivanja))
                     )
                 )
-
             )
         }
-        fun itemTestNotVisited(id: Int, k: Anketa, posjeceni:MutableList<Int>) {
-            Espresso.onView(ViewMatchers.withId(R.id.listaAnketa)).perform(
-                RecyclerViewActions.scrollTo<RecyclerView.ViewHolder>(
-                    firstNotVisited(posjeceni,
-                        CoreMatchers.allOf(
-                            ViewMatchers.hasDescendant(ViewMatchers.withText(k.naziv)),
-                            ViewMatchers.hasDescendant(ViewMatchers.withText(k.nazivIstrazivanja))
-                        )
-                    )
-                )
-            )
-        }
-        fun firstNotVisited(posjeceni: MutableList<Int>,matcher: Matcher<View>) = object: TypeSafeMatcher<View>(){
+        fun withTextColor(trazenaBoja: Int) = object:TypeSafeMatcher<View>(){
             override fun describeTo(description: Description) {
-                description.appendText("Više puta machan isti objekat")
+                description.appendText("Nema tekst zelene boje")
             }
+
             override fun matchesSafely(item: View): Boolean {
-                val uqCode = System.identityHashCode(item)
-                val posjecen = posjeceni.indexOf(uqCode)>-1
-                if (!posjecen && matcher.matches(item)) {
-                    posjeceni.add(uqCode)
-                    return true;
-                }
-                return false
+                if(!(item is TextView)) return false;
+                return item.currentTextColor== trazenaBoja
+
             }
 
         }
-        fun atPosition(position: Int, itemMatcher: Matcher<View?>): Matcher<View?>? {
-            checkNotNull(itemMatcher)
-            return object : BoundedMatcher<View?, RecyclerView>(RecyclerView::class.java) {
-                override fun describeTo(description: Description) {
-                    description.appendText("has item at position $position: ")
-                    itemMatcher.describeTo(description)
-                }
-
-                override fun matchesSafely(view: RecyclerView): Boolean {
-                    val viewHolder = view.findViewHolderForAdapterPosition(position)
-                        ?: // has no item on such position
-                        return false
-                    return itemMatcher.matches(viewHolder.itemView)
-                }
+        fun withBackground(trazenaBoja:Int) = object:TypeSafeMatcher<View>(){
+            override fun describeTo(description: Description) {
+                description.appendText("Nema pozadinu zelene boje")
             }
+
+            override fun matchesSafely(item: View): Boolean {
+                if(!(item.background is ColorDrawable)) return false;
+                var boja = item.background as ColorDrawable
+                return boja.color==trazenaBoja
+            }
+
         }
     }
 }

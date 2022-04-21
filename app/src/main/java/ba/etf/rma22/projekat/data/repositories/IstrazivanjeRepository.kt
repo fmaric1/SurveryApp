@@ -3,14 +3,15 @@ package ba.etf.rma22.projekat.data.repositories
 import ba.etf.rma22.projekat.data.models.Anketa
 import ba.etf.rma22.projekat.data.models.Istrazivanje
 import ba.etf.rma22.projekat.data.staticdata.getAnkete
+import ba.etf.rma22.projekat.data.staticdata.getGrupe
 import ba.etf.rma22.projekat.data.staticdata.getIstrazivanja
 
 class IstrazivanjeRepository {
     companion object {
-        val istrazivanja = ArrayList<String>()
+        val mojaIstrazivanja = ArrayList<Istrazivanje>()
 
         init {
-            istrazivanja.add("RMA")
+            mojaIstrazivanja.addAll(getIstrazivanja().filter { it.naziv == "RMA" })
         }
 
         fun getIstrazivanjeByGodina(godina:Int) : List<Istrazivanje>{
@@ -23,19 +24,15 @@ class IstrazivanjeRepository {
             return getIstrazivanja()
         }
 
-        fun getUpisani(): List<Istrazivanje> {
-            val ankete = getIstrazivanja()
-            val filtriranaIstrazivanja: ArrayList<Istrazivanje> = ArrayList()
-            for(x in istrazivanja){
-                filtriranaIstrazivanja.addAll(ankete.filter { it.naziv.equals(x) })
-            }
-            return filtriranaIstrazivanja.toList()
+        fun getUpisanaIstrazivanja(): List<Istrazivanje> {
+            return mojaIstrazivanja
         }
 
 
         fun upisiIstrazivanje(Istrazivanje: Istrazivanje) {
-            istrazivanja.add(Istrazivanje.naziv)
-            istrazivanja.distinct()
+            mojaIstrazivanja.add(Istrazivanje)
+            mojaIstrazivanja.distinct()
+            AnketaRepository.dodajAnketu()
         }
     }
 

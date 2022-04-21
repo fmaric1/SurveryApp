@@ -54,12 +54,12 @@ class FragmentPredaj : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         progresTekst = view.findViewById(R.id.progresTekst)
         dugmePredaj = view.findViewById(R.id.dugmePredaj)
-        progresTekst.setText((anketa.progress*100).toString() + "%")
+        progresTekst.setText((anketa.progress*100).toInt().toString() + "%")
         dugmePredaj.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?) {
                 anketa = Anketa(anketa.naziv, anketa.nazivIstrazivanja, anketa.datumPocetka, anketa.datumKraj,
                     anketa.datumRada, anketa.trajanje, anketa.nazivGrupe, anketa.progress, statusAnkete.AKTIVAN_URADEN)
-                (activity as MainActivity).closeAnketa()
+                (activity as MainActivity).closeAnketa(anketa.naziv, anketa.nazivIstrazivanja)
             }
         })
     }

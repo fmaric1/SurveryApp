@@ -5,7 +5,7 @@ import ba.etf.rma22.projekat.data.models.PitanjeAnketa
 import ba.etf.rma22.projekat.data.staticdata.getPitanjaData
 import ba.etf.rma22.projekat.data.staticdata.getPitanjeAnketaData
 
-class PitanjaAnketaRepository {
+class PitanjeAnketaRepository {
     companion object{
         fun getPitanja(nazivAnkete: String, nazivIstrazivanja: String): List<Pitanje>{
             val pitanjaAnkete = getPitanjeAnketaData()

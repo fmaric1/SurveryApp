@@ -66,6 +66,7 @@ class FragmentIstrazivanje : Fragment() {
 
                     istrazivanja.add("")
                     for (x in data) {
+                        val y = anketaListViewModel.getUpisanaIstrazivanja()
                         if(!anketaListViewModel.getUpisanaIstrazivanja().contains(x))
                             istrazivanja.add(x.naziv)
                     }
@@ -127,7 +128,7 @@ class FragmentIstrazivanje : Fragment() {
                                                 )
                                             }
                                             val fragment = FragmentPoruka.newInstance()
-                                            fragment.getArgs(data1[grupaOdabir - 1].naziv, data[istrazivanjeOdabir - 1].naziv)
+                                            fragment.getArgs(data1[grupaOdabir - 1].naziv, data[istrazivanjeOdabir - 1].naziv, 0)
 
 
                                             (activity as MainActivity).refreshSecondFragment(fragment)

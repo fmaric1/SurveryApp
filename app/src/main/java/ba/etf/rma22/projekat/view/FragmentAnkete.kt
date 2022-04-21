@@ -53,7 +53,7 @@ class FragmentAnkete : Fragment() {
             override fun onItemClick(position: Int) {
                 if(position < anketaListViewModel.getMyAnkete().size ) {
                     val izabranaAnketa =anketaListViewModel.getMyAnkete().get(position)
-                    if(izabranaAnketa.status == statusAnkete.AKTIVAN_NIJE_URADEN) {
+                    if(izabranaAnketa.status != statusAnkete.NEAKTIVAN) {
                         val pitanjaAnkete = anketaListViewModel.getPitanjaAnkete(
                             izabranaAnketa.naziv,
                             izabranaAnketa.nazivIstrazivanja
@@ -61,7 +61,7 @@ class FragmentAnkete : Fragment() {
                         var fragmentiPitanja: MutableList<Fragment> = mutableListOf()
                         for (x in pitanjaAnkete) {
                             val fragment = FragmentPitanje.newInstance()
-                            fragment.getArgs(x)
+                            fragment.getArgs(x, izabranaAnketa.naziv, izabranaAnketa.nazivIstrazivanja )
                             fragmentiPitanja.add(fragment)
                         }
                         val fragment = FragmentPredaj()

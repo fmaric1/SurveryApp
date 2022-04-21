@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 import ba.etf.rma22.projekat.view.FragmentAnkete
+import ba.etf.rma22.projekat.view.FragmentPoruka
 import ba.etf.rma22.projekat.view.ViewPagerAdapter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_ankete.*
@@ -23,7 +24,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        viewPager = findViewById(R.id.viewPager2)
+        viewPager = findViewById(R.id.pager)
         val fragments =
             mutableListOf(
                     FragmentAnkete(),
@@ -56,17 +57,26 @@ class MainActivity : AppCompatActivity() {
         viewPagerAdapter = ViewPagerAdapter(supportFragmentManager, fragmentiPitanja.toMutableList(), lifecycle)
         viewPager.adapter = viewPagerAdapter
     }
-
-    public fun closeAnketa(){
+    public fun closeAnketeUnfinished(){
+        val fragments =
+                mutableListOf(
+                        FragmentAnkete(),
+                        FragmentIstrazivanje()
+                )
+        viewPagerAdapter = ViewPagerAdapter(supportFragmentManager, fragments, lifecycle)
+        viewPager.adapter = viewPagerAdapter
+    }
+    public fun closeAnketa(nazivAnkete: String, nazivIstrazivanja: String){
+        val fragment = FragmentPoruka()
+        fragment.getArgs(nazivAnkete, nazivIstrazivanja, 1)
         val fragments =
             mutableListOf(
                 FragmentAnkete(),
-                FragmentIstrazivanje()
+                fragment
             )
-
-        viewPager.offscreenPageLimit = 2
         viewPagerAdapter = ViewPagerAdapter(supportFragmentManager, fragments, lifecycle)
         viewPager.adapter = viewPagerAdapter
+        viewPager.setCurrentItem(1)
     }
 
 }

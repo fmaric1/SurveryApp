@@ -4,22 +4,22 @@ import ba.etf.rma22.projekat.data.models.Grupa
 import ba.etf.rma22.projekat.data.staticdata.getAnkete
 import ba.etf.rma22.projekat.data.models.Anketa
 import ba.etf.rma22.projekat.data.models.statusAnkete
+import ba.etf.rma22.projekat.data.staticdata.getGrupe
+import ba.etf.rma22.projekat.data.staticdata.getIstrazivanja
 
 class AnketaRepository {
 
     companion object {
-        val grupe = ArrayList<String>()
+        val mojeAnkete = ArrayList<Anketa>()
         init {
-            grupe.add("RMA1")
+            val Ankete = getAnkete()
+            for(x in GrupaRepository.getMyGroups()){
+                mojeAnkete.addAll(Ankete.filter { it.nazivGrupe == x.naziv })
+            }
         }
 
         fun getMyAnkete(): List<Anketa>{
-            val Anketaovi = getAnkete()
-            val filtriraniAnketa: ArrayList<Anketa> = ArrayList()
-            for(x in grupe){
-                filtriraniAnketa.addAll(Anketaovi.filter { it.nazivGrupe.equals(x) })
-            }
-            return filtriraniAnketa.distinct().toList()
+            return mojeAnkete
         }
 
         fun getAll(): List<Anketa> {
@@ -38,10 +38,20 @@ class AnketaRepository {
             return getMyAnkete().filter { it.status.equals(statusAnkete.PROSAO) }
         }
 
-        fun upisiStudenta(grupa: Grupa) {
-            grupe.add(grupa.naziv)
-            grupe.distinct()
+        fun dodajAnketu(){
+            val nazivAnketa: ArrayList<String> = ArrayList()
+            for (x in mojeAnkete){
+                nazivAnketa.add(x.naziv)
+            }
+            for(x in getAnkete()){
+                for(y in GrupaRepository.getMyGroups()){
+                    if(x.nazivGrupe == y.naziv && !nazivAnketa.contains(x.naziv))
+                        mojeAnkete.add(x)
+                }
+            }
         }
+
+
 
 
     }

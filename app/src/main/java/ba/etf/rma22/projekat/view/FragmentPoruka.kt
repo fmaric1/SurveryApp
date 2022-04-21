@@ -13,14 +13,19 @@ private const val ARG_PARAM3 = "param3"
 class FragmentPoruka : Fragment() {
     private var param3: String? = null
     private lateinit var tvPoruka: TextView
-    private var grupa: String = ""
-    private var istrazivanje: String = ""
+    private var arg1: String = ""
+    private var arg2: String = ""
+    private var tekstPoruke: String = ""
 
-    public fun getArgs(g: String, ist: String): FragmentPoruka {
+    public fun getArgs(g: String, ist: String, vrsta: Int): FragmentPoruka {
         val args = Bundle()
         val fragment = FragmentPoruka()
-        grupa=g
-        istrazivanje = ist
+        arg1=g
+        arg2 = ist
+        if(vrsta == 0)
+        tekstPoruke = "Uspješno ste upisani u grupu $arg1 istrazivanja $arg2!"
+        else if(vrsta == 1)
+            tekstPoruke = "Završili ste anketu $arg1 u okviru istraživanja $arg2"
         fragment.arguments = args
         return fragment
     }
@@ -37,10 +42,7 @@ class FragmentPoruka : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         tvPoruka = view.findViewById(R.id.tvPoruka)
-
-        var text: String =
-            "Uspješno ste upisani u grupu $grupa istrazivanja $istrazivanje!"
-        tvPoruka.setText(text)
+        tvPoruka.setText(tekstPoruke)
 
     }
     companion object {

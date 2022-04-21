@@ -7,7 +7,7 @@ import ba.etf.rma22.projekat.data.models.Pitanje
 import ba.etf.rma22.projekat.data.repositories.GrupaRepository
 import ba.etf.rma22.projekat.data.repositories.AnketaRepository
 import ba.etf.rma22.projekat.data.repositories.IstrazivanjeRepository
-import ba.etf.rma22.projekat.data.repositories.PitanjaAnketaRepository
+import ba.etf.rma22.projekat.data.repositories.PitanjeAnketaRepository
 import java.io.Serializable
 
 class AnketaListViewModel : Serializable{
@@ -29,7 +29,7 @@ class AnketaListViewModel : Serializable{
     }
 
     fun getUpisanaIstrazivanja(): List<Istrazivanje> {
-        return IstrazivanjeRepository.getUpisani()
+        return IstrazivanjeRepository.getUpisanaIstrazivanja()
     }
 
     fun getIstrazivanjaByGodina(godina: Int): List<Istrazivanje>{
@@ -41,13 +41,14 @@ class AnketaListViewModel : Serializable{
     }
 
     fun upisiStudenta(toString: String, istrazivanje: Istrazivanje, grupa: Grupa) {
-        AnketaRepository.upisiStudenta(grupa)
+        GrupaRepository.upisiStudenta(grupa)
         IstrazivanjeRepository.upisiIstrazivanje(istrazivanje)
+
 
     }
 
     fun getPitanjaAnkete(nazivAnkete: String, nazivIstrazivanja: String): List<Pitanje>{
-        return PitanjaAnketaRepository.getPitanja(nazivAnkete, nazivIstrazivanja )
+        return PitanjeAnketaRepository.getPitanja(nazivAnkete, nazivIstrazivanja )
     }
 
 }
