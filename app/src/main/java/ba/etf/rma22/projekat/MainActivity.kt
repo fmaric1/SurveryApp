@@ -8,6 +8,8 @@ import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
+import ba.etf.rma22.projekat.data.models.Anketa
+import ba.etf.rma22.projekat.data.repositories.AnketaRepository
 import ba.etf.rma22.projekat.view.FragmentAnkete
 import ba.etf.rma22.projekat.view.FragmentPoruka
 import ba.etf.rma22.projekat.view.FragmentPredaj
@@ -79,6 +81,11 @@ class MainActivity : AppCompatActivity() {
         viewPagerAdapter = ViewPagerAdapter(supportFragmentManager, fragments, lifecycle)
         viewPager.adapter = viewPagerAdapter
         viewPager.setCurrentItem(1)
+    }
+
+    fun refreshProgresFragment(anketaNaziv: String) {
+
+
     }
 
 }

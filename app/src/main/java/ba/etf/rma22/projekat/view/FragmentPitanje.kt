@@ -1,5 +1,6 @@
 package ba.etf.rma22.projekat.view
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
@@ -8,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import android.widget.AdapterView.OnItemClickListener
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.get
 import androidx.core.view.isVisible
 import androidx.core.view.iterator
@@ -55,9 +57,6 @@ class FragmentPitanje : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-        }
     }
 
     override fun onCreateView(
@@ -84,7 +83,7 @@ class FragmentPitanje : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        updateBojuOdogovora(idPitanja)
         listaOdgovora.onItemClickListener = object :  AdapterView.OnItemClickListener {
             override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 if(AnketaRepository.dajStatusAnkete(anketaNaziv) == statusAnkete.AKTIVAN_NIJE_URADEN) {
@@ -94,15 +93,11 @@ class FragmentPitanje : Fragment() {
                 }
             }
         }
-
         dugmeZaustavi.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?) {
                 (activity as MainActivity).closeAnketeUnfinished()
             }
         })
-
-
-
 
 
     }
@@ -120,6 +115,15 @@ class FragmentPitanje : Fragment() {
             brojac++
         }
     }
+
+    override fun onResume() {
+        updateBojuOdogovora(idPitanja)
+        super.onResume()
+
+    }
+
+
+
 
 
     companion object {
