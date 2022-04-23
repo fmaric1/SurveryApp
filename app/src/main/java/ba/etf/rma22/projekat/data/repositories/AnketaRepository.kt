@@ -11,11 +11,15 @@ class AnketaRepository {
 
     companion object {
         val mojeAnkete = ArrayList<Anketa>()
+        var sveAnkete = ArrayList<Anketa>()
         init {
             val Ankete = getAnkete()
             for(x in GrupaRepository.getMyGroups()){
                 mojeAnkete.addAll(Ankete.filter { it.nazivGrupe == x.naziv })
             }
+            sveAnkete.addAll(getAnkete())
+            izbaciMojeAnkete()
+
         }
 
         fun getMyAnkete(): List<Anketa>{
@@ -23,7 +27,7 @@ class AnketaRepository {
         }
 
         fun getAll(): List<Anketa> {
-            return getAnkete()
+            return mojeAnkete + sveAnkete
         }
 
         fun getDone(): List<Anketa> {
@@ -49,9 +53,57 @@ class AnketaRepository {
                         mojeAnkete.add(x)
                 }
             }
+            izbaciMojeAnkete()
+
+        }
+        fun izbaciMojeAnkete(){
+            val nazivAnketa: ArrayList<String> = ArrayList()
+            for (x in mojeAnkete){
+                nazivAnketa.add(x.naziv)
+            }
+            val filtriraneAnkete: ArrayList<Anketa> = ArrayList()
+            for(x in sveAnkete){
+                if(!nazivAnketa.contains(x.naziv))
+                    filtriraneAnkete.add(x)
+            }
+            sveAnkete =filtriraneAnkete
         }
 
+        fun updateProgressAnkete(imeAnkete: String, nazivIstrazivanja: String){
+            val pitanja = PitanjeAnketaRepository.getPitanja(imeAnkete, nazivIstrazivanja)
+            var brojac: Int = 0
+            for(x in pitanja){
+                if(PitanjeAnketaRepository.dajOdgovor(x.naziv) != 0)
+                    brojac++
+            }
 
+            for(x in mojeAnkete){
+                if(x.naziv == imeAnkete && pitanja.isNotEmpty()){
+                    x.progress=(brojac.toFloat()/pitanja.size)
+                }
+            }
+        }
+        fun updateStatusAnkete(imeAnkete: String){
+            for(x in mojeAnkete){
+                if(x.naziv == imeAnkete){
+                    x.status = statusAnkete.AKTIVAN_URADEN
+                }
+            }
+        }
+
+        fun dajProgress(naziv: String): Float {
+            for(x in mojeAnkete)
+                if(x.naziv == naziv)
+                    return x.progress
+            return (0).toFloat()
+        }
+        fun dajStatusAnkete(naziv: String): statusAnkete{
+            for(x in mojeAnkete){
+                if(x.naziv == naziv)
+                    return x.status
+            }
+            return statusAnkete.AKTIVAN_URADEN
+        }
 
 
     }

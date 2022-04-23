@@ -12,6 +12,7 @@ import ba.etf.rma22.projekat.MainActivity
 import ba.etf.rma22.projekat.R
 import ba.etf.rma22.projekat.data.models.Anketa
 import ba.etf.rma22.projekat.data.models.statusAnkete
+import ba.etf.rma22.projekat.data.repositories.AnketaRepository
 import java.util.*
 
 
@@ -25,6 +26,7 @@ class FragmentPredaj : Fragment() {
         Date(122,1,1), 0, "1", 0F, statusAnkete.AKTIVAN_NIJE_URADEN)
     private lateinit var progresTekst: TextView
     private lateinit var dugmePredaj: Button
+
 
 
     fun getArgs(izabranaAnketa: Anketa): FragmentPredaj{
@@ -54,17 +56,33 @@ class FragmentPredaj : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         progresTekst = view.findViewById(R.id.progresTekst)
         dugmePredaj = view.findViewById(R.id.dugmePredaj)
-        progresTekst.setText((anketa.progress*100).toInt().toString() + "%")
+        anketa.progress = AnketaRepository.dajProgress(anketa.naziv)
+        var progressInt:Int = 0
+        if(anketa.progress<0.1)
+            progressInt = 0
+        else if(anketa.progress>=0.1 && anketa.progress<0.3)
+            progressInt = 20
+        else if(anketa.progress>=0.3 && anketa.progress<0.5)
+            progressInt = 40
+        else if(anketa.progress>=0.5 && anketa.progress<0.7)
+            progressInt = 60
+        else if(anketa.progress>=0.7 && anketa.progress<1.0)
+            progressInt = 80
+        else if(anketa.progress>=1.0)
+            progressInt = 100
+
+        progresTekst.setText(progressInt.toString() + "%")
         dugmePredaj.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?) {
-                anketa = Anketa(anketa.naziv, anketa.nazivIstrazivanja, anketa.datumPocetka, anketa.datumKraj,
-                    anketa.datumRada, anketa.trajanje, anketa.nazivGrupe, anketa.progress, statusAnkete.AKTIVAN_URADEN)
-                (activity as MainActivity).closeAnketa(anketa.naziv, anketa.nazivIstrazivanja)
+                if(anketa.status == statusAnkete.AKTIVAN_NIJE_URADEN){
+                    (activity as MainActivity).closeAnketa(anketa.naziv, anketa.nazivIstrazivanja)
+                    AnketaRepository.updateStatusAnkete(anketa.naziv)
+                }
+                else
+                    (activity as MainActivity).closeAnketeUnfinished()
             }
         })
     }
-
-
 
     companion object {
         fun newInstance() = FragmentPredaj

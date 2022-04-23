@@ -9,6 +9,8 @@ import android.view.ViewGroup
 import android.widget.*
 import android.widget.AdapterView.OnItemClickListener
 import androidx.core.view.get
+import androidx.core.view.isVisible
+import androidx.core.view.iterator
 import androidx.fragment.app.Fragment
 import ba.etf.rma22.projekat.MainActivity
 import ba.etf.rma22.projekat.R
@@ -16,6 +18,11 @@ import ba.etf.rma22.projekat.ViewModel.AnketaListViewModel
 import ba.etf.rma22.projekat.data.models.Anketa
 import ba.etf.rma22.projekat.data.models.Istrazivanje
 import ba.etf.rma22.projekat.data.models.Pitanje
+import ba.etf.rma22.projekat.data.models.statusAnkete
+import ba.etf.rma22.projekat.data.repositories.AnketaRepository
+import ba.etf.rma22.projekat.data.repositories.AnketaRepository.Companion.updateProgressAnkete
+import ba.etf.rma22.projekat.data.repositories.PitanjeAnketaRepository
+import kotlinx.android.synthetic.main.anketa_item.*
 import kotlinx.android.synthetic.main.fragment_istrazivanja.*
 import kotlinx.android.synthetic.main.fragment_pitanje.view.*
 
@@ -27,16 +34,17 @@ class FragmentPitanje : Fragment() {
     private lateinit var nazivPitanja: TextView
     private lateinit var listaOdgovora: ListView
     private lateinit var dugmeZaustavi: Button
-    private var anketaListViewModel = AnketaListViewModel()
     private lateinit var adapter: ArrayAdapter<String>
     private var pitanjeTekst: String = ""
     private var pitanjeOdgovori: List<String> = emptyList<String>()
     private var anketaNaziv: String = ""
     private var istrazivanjeNaziv: String = ""
+    private var idPitanja: String = ""
 
     public fun getArgs(pitanje: Pitanje, anketa: String, istrazivanje: String): FragmentPitanje{
         val args = Bundle()
         val fragment = FragmentPitanje()
+        idPitanja = pitanje.naziv
         pitanjeTekst = pitanje.tekst
         pitanjeOdgovori = pitanje.opcije
         anketaNaziv = anketa
@@ -56,29 +64,33 @@ class FragmentPitanje : Fragment() {
             inflater: LayoutInflater, container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View? {
+        val view =  inflater.inflate(R.layout.fragment_pitanje, container, false)
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_pitanje, container, false)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
         nazivPitanja = view.findViewById(R.id.tekstPitanja)
-        listaOdgovora = view.findViewById(R.id.odgovoriLista)
         dugmeZaustavi = view.findViewById(R.id.dugmeZaustavi)
-
+        listaOdgovora = view.findViewById(R.id.odgovoriLista)
         adapter = ArrayAdapter(
                 activity?.baseContext!!,
                 android.R.layout.simple_list_item_1,
                 pitanjeOdgovori
         )
+
         nazivPitanja.setText(pitanjeTekst)
         listaOdgovora.adapter = adapter
-        listaOdgovora.onItemClickListener = object :  AdapterView.OnItemClickListener {
+        updateBojuOdogovora(idPitanja)
 
+        return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        listaOdgovora.onItemClickListener = object :  AdapterView.OnItemClickListener {
             override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val tv = view?.findViewById<TextView>(android.R.id.text1)
-                if (tv != null) {
-                    tv.setTextColor(Color.parseColor("#0000FF"))
+                if(AnketaRepository.dajStatusAnkete(anketaNaziv) == statusAnkete.AKTIVAN_NIJE_URADEN) {
+                    PitanjeAnketaRepository.updateOdgovor(idPitanja, position + 1)
+                    updateBojuOdogovora(idPitanja)
+                    updateProgressAnkete(anketaNaziv, istrazivanjeNaziv)
                 }
             }
         }
@@ -92,7 +104,23 @@ class FragmentPitanje : Fragment() {
 
 
 
+
     }
+
+    fun updateBojuOdogovora(idPitanja: String) {
+        val odgovor = PitanjeAnketaRepository.dajOdgovor(idPitanja)
+        var brojac: Int = 1
+
+        for(x in listaOdgovora){
+            var tv =  x.findViewById<TextView>(android.R.id.text1)
+            if(brojac != odgovor)
+                tv.setTextColor(Color.parseColor("#FF000000"))
+            else
+                tv.setTextColor(Color.parseColor("#0000FF"))
+            brojac++
+        }
+    }
+
 
     companion object {
             fun newInstance(): FragmentPitanje = FragmentPitanje()

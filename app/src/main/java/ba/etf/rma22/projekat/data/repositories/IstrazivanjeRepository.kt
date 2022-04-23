@@ -34,6 +34,7 @@ class IstrazivanjeRepository {
             mojaIstrazivanja.distinct()
             AnketaRepository.dodajAnketu()
         }
+
     }
 
 }
