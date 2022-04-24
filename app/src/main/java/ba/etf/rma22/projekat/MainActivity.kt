@@ -60,6 +60,8 @@ class MainActivity : AppCompatActivity() {
     public fun openAnketa(fragmentiPitanja: List<Fragment>){
         viewPagerAdapter = ViewPagerAdapter(supportFragmentManager, fragmentiPitanja.toMutableList(), lifecycle)
         viewPager.adapter = viewPagerAdapter
+        viewPager.setCurrentItem(1)
+        viewPager.setCurrentItem(0)
     }
     public fun closeAnketeUnfinished(){
         val fragments =
@@ -83,9 +85,5 @@ class MainActivity : AppCompatActivity() {
         viewPager.setCurrentItem(1)
     }
 
-    fun refreshProgresFragment(anketaNaziv: String) {
-
-
-    }
 
 }

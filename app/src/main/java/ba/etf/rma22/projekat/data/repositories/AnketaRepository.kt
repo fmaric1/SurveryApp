@@ -1,11 +1,16 @@
 package ba.etf.rma22.projekat.data.repositories
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import ba.etf.rma22.projekat.data.models.Grupa
 import ba.etf.rma22.projekat.data.staticdata.getAnkete
 import ba.etf.rma22.projekat.data.models.Anketa
 import ba.etf.rma22.projekat.data.models.statusAnkete
 import ba.etf.rma22.projekat.data.staticdata.getGrupe
 import ba.etf.rma22.projekat.data.staticdata.getIstrazivanja
+import java.time.LocalDateTime
+import java.util.*
+import kotlin.collections.ArrayList
 
 class AnketaRepository {
 
@@ -89,6 +94,16 @@ class AnketaRepository {
                     x.status = statusAnkete.AKTIVAN_URADEN
                 }
             }
+        }
+
+        fun updateDatumRada(naziv: String){
+            for(x in mojeAnkete)
+                if(x.naziv == naziv) {
+                    val date = Date()
+                    val calendar = Calendar.getInstance()
+                    calendar.time = date
+                    x.datumRada = calendar.time
+                }
         }
 
         fun dajProgress(naziv: String): Float {

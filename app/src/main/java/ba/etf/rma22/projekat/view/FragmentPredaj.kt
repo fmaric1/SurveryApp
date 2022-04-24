@@ -16,6 +16,7 @@ import ba.etf.rma22.projekat.R
 import ba.etf.rma22.projekat.data.models.Anketa
 import ba.etf.rma22.projekat.data.models.statusAnkete
 import ba.etf.rma22.projekat.data.repositories.AnketaRepository
+import java.time.LocalDate
 import java.util.*
 
 
@@ -77,8 +78,10 @@ class FragmentPredaj : Fragment() {
         progresTekst.setText(progressInt.toString() + "%")
         dugmePredaj.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?) {
-                if (anketa.status == statusAnkete.AKTIVAN_NIJE_URADEN)
+                if (anketa.status == statusAnkete.AKTIVAN_NIJE_URADEN) {
                     AnketaRepository.updateStatusAnkete(anketa.naziv)
+                    AnketaRepository.updateDatumRada(anketa.naziv)
+                }
                 (activity as MainActivity).closeAnketa(anketa.naziv, anketa.nazivIstrazivanja)
             }
         })
