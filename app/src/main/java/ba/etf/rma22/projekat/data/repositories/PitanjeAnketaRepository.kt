@@ -51,5 +51,9 @@ class PitanjeAnketaRepository {
             return 0
         }
 
+        fun getPitanja(idAnkete:Int):List<Pitanje>{
+
+        }
+
     }
 }

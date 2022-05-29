@@ -120,6 +120,14 @@ class AnketaRepository {
             return statusAnkete.AKTIVAN_URADEN
         }
 
+        fun getAll(offset:Int):List<Anketa>{
 
+        }
+        fun getById(id:Int):Anketa {
+
+        }
+        fun getUpisane():List<Anketa>{
+
+        }
     }
 }
