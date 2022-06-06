@@ -1,14 +1,18 @@
 package ba.etf.rma22.projekat.data.repositories
 
-import android.os.Build
-import androidx.annotation.RequiresApi
-import ba.etf.rma22.projekat.data.models.Grupa
 import ba.etf.rma22.projekat.data.staticdata.getAnkete
 import ba.etf.rma22.projekat.data.models.Anketa
 import ba.etf.rma22.projekat.data.models.statusAnkete
-import ba.etf.rma22.projekat.data.staticdata.getGrupe
-import ba.etf.rma22.projekat.data.staticdata.getIstrazivanja
-import java.time.LocalDateTime
+import com.google.gson.internal.Streams.parse
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
+import java.lang.IllegalArgumentException
+import java.net.HttpURLConnection
+import java.net.URL
+import java.time.LocalDate.parse
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -73,7 +77,6 @@ class AnketaRepository {
             }
             sveAnkete =filtriraneAnkete
         }
-
         fun updateProgressAnkete(imeAnkete: String, nazivIstrazivanja: String){
             val pitanja = PitanjeAnketaRepository.getPitanja(imeAnkete, nazivIstrazivanja)
             var brojac: Int = 0
@@ -95,7 +98,6 @@ class AnketaRepository {
                 }
             }
         }
-
         fun updateDatumRada(naziv: String){
             for(x in mojeAnkete)
                 if(x.naziv == naziv) {
@@ -105,7 +107,6 @@ class AnketaRepository {
                     x.datumRada = calendar.time
                 }
         }
-
         fun dajProgress(naziv: String): Float {
             for(x in mojeAnkete)
                 if(x.naziv == naziv)
@@ -120,14 +121,110 @@ class AnketaRepository {
             return statusAnkete.AKTIVAN_URADEN
         }
 
-        fun getAll(offset:Int):List<Anketa>{
+        suspend fun getAll(offset:Int = 0): List<Anketa>{
+            return withContext(Dispatchers.IO){
+                val ankete = ArrayList<Anketa>()
+                if(offset == 0){
+                    for(i in 1..5){
+                        val url1 = ApiConfig.baseURL + "/anketa?offset=$i"
+                        val url = URL(url1)
+                        (url.openConnection() as? HttpURLConnection)?.run{
+                            val result = this.inputStream.bufferedReader().use { it.readText() }
+                            val items = JSONArray(result)
+                            for(j in 0 until items.length()){
+                                val anketaData = items.getJSONObject(j)
+                                ankete.add(dajNovuAnketu(anketaData))
+                            }
+                        }
+                    }
+                }
+                else {
+                    val url1 = ApiConfig.baseURL + "/anketa?offset=$offset"
+                    val url = URL(url1)
+                    (url.openConnection() as? HttpURLConnection)?.run{
+                        val result = this.inputStream.bufferedReader().use { it.readText() }
+                        val items = JSONArray(result)
+                        for(j in 0 until items.length()){
+                            val anketaData = items.getJSONObject(j)
+                            ankete.add(dajNovuAnketu(anketaData))
+                        }
+                    }
+                }
+
+                return@withContext ankete
+
+            }
 
         }
-        fun getById(id:Int):Anketa {
-
+        suspend fun getByID( id: Int): Anketa? {
+            return withContext(Dispatchers.IO){
+                val url1 = ApiConfig.baseURL + "/anketa/$id"
+                val url = URL(url1)
+                (url.openConnection() as? HttpURLConnection)?.run{
+                    val result = this.inputStream.bufferedReader().use { it.readText() }
+                    val anketaData = JSONObject(result)
+                    return@withContext dajNovuAnketu(anketaData)
+                }
+            return@withContext null
+            }
         }
-        fun getUpisane():List<Anketa>{
+
+        suspend fun getUpisane():List<Anketa> {
+            try {
+                return withContext(Dispatchers.IO) {
+                    val ankete = ArrayList<Anketa>()
+                    val grupe = IstrazivanjeIGrupaRepository.getUpisaneGrupe()
+                    for (x in grupe) {
+                        val id = x.id
+                        val url1 = ApiConfig.baseURL + "/grupa/$id/ankete"
+                        val url = URL(url1)
+                        (url.openConnection() as? HttpURLConnection)?.run {
+                            val result = this.inputStream.bufferedReader().use { it.readText() }
+                            val items = JSONArray(result)
+                            for (j in 0 until items.length()) {
+                                val anketaData = items.getJSONObject(j)
+                                ankete.add(dajNovuAnketu(anketaData))
+                            }
+
+                        }
+                    }
+                    return@withContext ankete
+                }
+            }
+            catch (e: JSONException){
+                throw IllegalArgumentException(e.message)
+            }
+        }
+
+
+        fun dajNovuAnketu(anketaData: JSONObject): Anketa {
+            var datumString = anketaData.getString("datumPocetak")
+            var datumPocetak = Date(100, 4,29)
+            if(!datumString.equals("null")) {
+                datumPocetak = Date(
+                    datumString.subSequence(0, 4).toString().toInt() - 1900,
+                    datumString.subSequence(6, 7).toString().toInt(),
+                    datumString.subSequence(8, 10).toString().toInt()
+                )
+            }
+
+                val anketa = Anketa(
+                    anketaData.getString("naziv"),
+                    "",
+                    datumPocetak,
+                    null,
+                    null,
+                    anketaData.getInt("trajanje"),
+                    "",
+                    0.0F,
+                    statusAnkete.AKTIVAN_NIJE_URADEN,
+                    anketaData.getInt("id")
+                )
+                return anketa
+
 
         }
     }
+
+
 }

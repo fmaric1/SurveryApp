@@ -47,7 +47,7 @@ class FragmentPitanje : Fragment() {
         val args = Bundle()
         val fragment = FragmentPitanje()
         idPitanja = pitanje.naziv
-        pitanjeTekst = pitanje.tekst
+        pitanjeTekst = pitanje.tekstPitanja
         pitanjeOdgovori = pitanje.opcije
         anketaNaziv = anketa
         istrazivanjeNaziv = istrazivanje

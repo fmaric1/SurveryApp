@@ -65,16 +65,7 @@ class UnitTests {
         assertTrue(ankete.contains(anketa5))
     }
 
-    @Test
-    fun upisiStudentaTest(){
-        val grupa = Grupa("TP1", "TP")
-        val istrazivanje = Istrazivanje("TP", 2)
-        IstrazivanjeRepository.upisiIstrazivanje(istrazivanje)
-        AnketaRepository.upisiStudenta(grupa)
-        ankete = AnketaRepository.getMyAnkete()
-        assertEquals(2, ankete.size)
 
-    }
 
 
 

@@ -4,6 +4,13 @@ import ba.etf.rma22.projekat.data.models.Pitanje
 import ba.etf.rma22.projekat.data.models.PitanjeAnketa
 import ba.etf.rma22.projekat.data.staticdata.getPitanjaData
 import ba.etf.rma22.projekat.data.staticdata.getPitanjeAnketaData
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONException
+import java.net.HttpURLConnection
+import java.net.MalformedURLException
+import java.net.URL
 
 class PitanjeAnketaRepository {
     companion object{
@@ -51,9 +58,35 @@ class PitanjeAnketaRepository {
             return 0
         }
 
-        fun getPitanja(idAnkete:Int):List<Pitanje>{
+        suspend fun getPitanja(idAnkete:Int):List<Pitanje> {
+            return withContext(Dispatchers.IO) {
+                    val pitanja = ArrayList<Pitanje>()
+                    val url1 = ApiConfig.baseURL + "/anketa/$idAnkete/pitanja"
+                    val url = URL(url1)
+                    (url.openConnection() as? HttpURLConnection)?.run {
+                        val result = this.inputStream.bufferedReader().use { it.readText() }
+                        val items = JSONArray(result)
+                        for (i in 0 until items.length()) {
+                            val pitanjeData = items.getJSONObject(i)
+                            val opcijeJSON = pitanjeData.getJSONArray("opcije")
+                            val opcije = ArrayList<String>()
+                            for (j in 0 until opcijeJSON.length()) {
+                                opcije.add(opcijeJSON.get(j).toString())
+                            }
+                            val pitanje = Pitanje(
+                                pitanjeData.getString("naziv"),
+                                pitanjeData.getString("tekstPitanja"),
+                                opcije,
+                                pitanjeData.getInt("id")
+                            )
+                            pitanja.add(pitanje)
+                        }
+                    }
 
+                    return@withContext pitanja
+
+
+            }
         }
-
     }
 }

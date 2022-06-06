@@ -48,7 +48,7 @@ class AnketaListAdapter(private var ankete: List<Anketa>) : RecyclerView.Adapter
             }
             statusAnkete.NEAKTIVAN -> {
                 holder.status.setImageResource(R.drawable.zuta)
-                datum = anketa.datumPocetka
+                datum = anketa.datumPocetak
                 datumText = "Vrijeme aktiviranja: "
             }
             statusAnkete.PROSAO ->{
@@ -69,7 +69,11 @@ class AnketaListAdapter(private var ankete: List<Anketa>) : RecyclerView.Adapter
         else if(anketa.progress>=1.0)
             progressInt = 100
         holder.imeKviza.text = anketa.naziv
+        if(datum != null)
         holder.datum.text = datumText + datum.date.toString()+"."+ (datum.month +1).toString() + "." + (datum.year + 1900).toString()
+        else{
+            holder.datum.text = ""
+        }
         holder.imePredmeta.text = anketa.nazivIstrazivanja
         holder.progressBar.progress = progressInt
 
