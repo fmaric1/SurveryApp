@@ -35,7 +35,7 @@ class AnketaRepository {
             return mojeAnkete
         }
 
-        fun getAll(): List<Anketa> {
+        fun getAllFromRepository(): List<Anketa> {
             return mojeAnkete + sveAnkete
         }
 
@@ -122,37 +122,42 @@ class AnketaRepository {
         }
 
         suspend fun getAll(offset:Int = 0): List<Anketa>{
-            return withContext(Dispatchers.IO){
-                val ankete = ArrayList<Anketa>()
-                if(offset == 0){
-                    for(i in 1..5){
-                        val url1 = ApiConfig.baseURL + "/anketa?offset=$i"
+            try {
+                return withContext(Dispatchers.IO) {
+                    val ankete = ArrayList<Anketa>()
+                    if (offset == 0) {
+                        for (i in 1..5) {
+                            val url1 = ApiConfig.baseURL + "/anketa?offset=$i"
+                            val url = URL(url1)
+                            (url.openConnection() as? HttpURLConnection)?.run {
+                                val result = this.inputStream.bufferedReader().use { it.readText() }
+                                val items = JSONArray(result)
+                                for (j in 0 until items.length()) {
+                                    val anketaData = items.getJSONObject(j)
+                                    ankete.add(dajNovuAnketu(anketaData))
+                                }
+
+                            }
+                        }
+
+                    } else {
+                        val url1 = ApiConfig.baseURL + "/anketa?offset=$offset"
                         val url = URL(url1)
-                        (url.openConnection() as? HttpURLConnection)?.run{
+                        (url.openConnection() as? HttpURLConnection)?.run {
                             val result = this.inputStream.bufferedReader().use { it.readText() }
                             val items = JSONArray(result)
-                            for(j in 0 until items.length()){
+                            for (j in 0 until items.length()) {
                                 val anketaData = items.getJSONObject(j)
                                 ankete.add(dajNovuAnketu(anketaData))
                             }
                         }
                     }
-                }
-                else {
-                    val url1 = ApiConfig.baseURL + "/anketa?offset=$offset"
-                    val url = URL(url1)
-                    (url.openConnection() as? HttpURLConnection)?.run{
-                        val result = this.inputStream.bufferedReader().use { it.readText() }
-                        val items = JSONArray(result)
-                        for(j in 0 until items.length()){
-                            val anketaData = items.getJSONObject(j)
-                            ankete.add(dajNovuAnketu(anketaData))
-                        }
-                    }
-                }
 
-                return@withContext ankete
+                    return@withContext ankete
 
+                }
+            }catch (e: JSONException){
+                throw JSONException(e.message)
             }
 
         }

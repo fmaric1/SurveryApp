@@ -15,7 +15,7 @@ class AnketaListViewModel : Serializable{
         return AnketaRepository.getMyAnkete()
     }
     fun getAll():List<Anketa>{
-        return AnketaRepository.getAll()
+        return AnketaRepository.getAllFromRepository()
     }
 
     fun getDone():List<Anketa>{

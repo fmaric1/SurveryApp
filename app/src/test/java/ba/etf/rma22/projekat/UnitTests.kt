@@ -29,7 +29,7 @@ class UnitTests {
     Date(), 4, "VI1", 0.5F, statusAnkete.AKTIVAN_NIJE_URADEN)
     val anketa7 = Anketa("Anketa 7", "VI", Date(122, 3, 15), Date(122, 3, 16),
     Date(), 6, "VI2", 0F, statusAnkete.NEAKTIVAN)
-    var ankete = AnketaRepository.getAll()
+    var ankete = AnketaRepository.getAllFromRepository()
 
     @Test
     fun getMyAnketeTest(){
@@ -39,7 +39,7 @@ class UnitTests {
     }
     @Test
     fun getAllAnketeTest(){
-        ankete = AnketaRepository.getAll()
+        ankete = AnketaRepository.getAllFromRepository()
         assertEquals(7, ankete.size)
     }
 
