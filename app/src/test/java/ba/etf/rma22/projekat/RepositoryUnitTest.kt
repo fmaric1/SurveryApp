@@ -79,7 +79,7 @@ class RepositoryUnitTest {
         var prije = TakeAnketaRepository.getPoceteAnkete()
         TakeAnketaRepository.zapocniAnketu(upisaneAnkete!![0]?.id)
         var poslije = TakeAnketaRepository.getPoceteAnkete()
-        //assertThat(prije,CoreMatchers.`is`(CoreMatchers.nullValue()))
+        assertThat(prije,CoreMatchers.`is`(CoreMatchers.nullValue()))
         assertThat(poslije!!.size,CoreMatchers.equalTo(1))
     }
 

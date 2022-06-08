@@ -14,19 +14,19 @@ import androidx.core.view.get
 import androidx.core.view.isVisible
 import androidx.core.view.iterator
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import ba.etf.rma22.projekat.MainActivity
 import ba.etf.rma22.projekat.R
 import ba.etf.rma22.projekat.ViewModel.AnketaListViewModel
-import ba.etf.rma22.projekat.data.models.Anketa
-import ba.etf.rma22.projekat.data.models.Istrazivanje
-import ba.etf.rma22.projekat.data.models.Pitanje
-import ba.etf.rma22.projekat.data.models.statusAnkete
+import ba.etf.rma22.projekat.data.models.*
 import ba.etf.rma22.projekat.data.repositories.AnketaRepository
 import ba.etf.rma22.projekat.data.repositories.AnketaRepository.Companion.updateProgressAnkete
+import ba.etf.rma22.projekat.data.repositories.OdgovorRepository
 import ba.etf.rma22.projekat.data.repositories.PitanjeAnketaRepository
 import kotlinx.android.synthetic.main.anketa_item.*
 import kotlinx.android.synthetic.main.fragment_istrazivanja.*
 import kotlinx.android.synthetic.main.fragment_pitanje.view.*
+import kotlinx.coroutines.launch
 
 
 private const val ARG_PARAM1 = "param1"
@@ -42,8 +42,11 @@ class FragmentPitanje : Fragment() {
     private var anketaNaziv: String = ""
     private var istrazivanjeNaziv: String = ""
     private var idPitanja: String = ""
+    private var idAnketaTaken: Int = 0
+    private var anketaListViewModel = AnketaListViewModel()
+    private var idPitanjaInt = 0
 
-    public fun getArgs(pitanje: Pitanje, anketa: String, istrazivanje: String): FragmentPitanje{
+    public fun getArgs(pitanje: Pitanje, anketa: String, istrazivanje: String, anketaTaken: AnketaTaken?): FragmentPitanje{
         val args = Bundle()
         val fragment = FragmentPitanje()
         idPitanja = pitanje.naziv
@@ -51,6 +54,10 @@ class FragmentPitanje : Fragment() {
         pitanjeOdgovori = pitanje.opcije
         anketaNaziv = anketa
         istrazivanjeNaziv = istrazivanje
+        if (anketaTaken != null) {
+            idAnketaTaken = anketaTaken.id
+            idPitanjaInt = anketaTaken.AnketumId
+        }
         fragment.arguments = args
         return fragment
     }
@@ -88,13 +95,15 @@ class FragmentPitanje : Fragment() {
             override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 if(AnketaRepository.dajStatusAnkete(anketaNaziv) == statusAnkete.AKTIVAN_NIJE_URADEN) {
                     PitanjeAnketaRepository.updateOdgovor(idPitanja, position + 1)
-                    updateBojuOdogovora(idPitanja)
+                    OdgovorRepository.dodajNeposlani(idPitanjaInt, position + 1, idAnketaTaken)
+                    updateBojuOdogovora(idPitanja, position + 1)
                     updateProgressAnkete(anketaNaziv, istrazivanjeNaziv)
                 }
             }
         }
         dugmeZaustavi.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?) {
+                lifecycleScope.launch{ anketaListViewModel.posaljiOdgovore()}
                 (activity as MainActivity).closeAnketeUnfinished()
             }
         })
@@ -102,8 +111,14 @@ class FragmentPitanje : Fragment() {
 
     }
 
-    fun updateBojuOdogovora(idPitanja: String) {
-        val odgovor = PitanjeAnketaRepository.dajOdgovor(idPitanja)
+    fun updateBojuOdogovora(idPitanja: String, pozicija: Int = 0) {
+        //val odgovor = PitanjeAnketaRepository.dajOdgovor(idPitanja)
+
+        var odgovor = pozicija
+        var odgovori = anketaListViewModel.dajSveOdgovore()
+        for(x in odgovori)
+            if(x.idAnketaTaken == idAnketaTaken && x.id == idPitanjaInt)
+                odgovor = x.odgovoreno
         var brojac: Int = 1
 
         for(x in listaOdgovora){

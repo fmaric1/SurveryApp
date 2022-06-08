@@ -10,12 +10,18 @@ import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import ba.etf.rma22.projekat.MainActivity
 import ba.etf.rma22.projekat.R
 import ba.etf.rma22.projekat.ViewModel.AnketaListViewModel
+import ba.etf.rma22.projekat.data.models.AnketaTaken
+import ba.etf.rma22.projekat.data.models.Pitanje
 import ba.etf.rma22.projekat.data.models.statusAnkete
+import ba.etf.rma22.projekat.data.repositories.PitanjeAnketaRepository
+import kotlinx.coroutines.launch
+import java.lang.IllegalArgumentException
 
 private const val ARG_PARAM1 = "param1"
 
@@ -52,16 +58,23 @@ class FragmentAnkete : Fragment() {
         anketeAdapter.setOnItemClickListener(object : AnketaListAdapter.onItemClickListener{
             override fun onItemClick(position: Int) {
                 if(position < anketaListViewModel.getMyAnkete().size ) {
-                    val izabranaAnketa =anketaListViewModel.getMyAnkete().get(position)
+                    val izabranaAnketa = anketaListViewModel.getMyAnkete()[position]
+                    var anketaTaken: AnketaTaken? = null
+                    lifecycleScope.launch{anketaTaken = anketaListViewModel.zapocniAnketu(izabranaAnketa.id) }
                     if(izabranaAnketa.status != statusAnkete.NEAKTIVAN) {
-                        val pitanjaAnkete = anketaListViewModel.getPitanjaAnkete(
-                            izabranaAnketa.naziv,
-                            izabranaAnketa.nazivIstrazivanja
-                        )
+                        val pitanjaAnkete = ArrayList<Pitanje>()
+                        val idPitanja = ArrayList<Int>()
+                        for(x in  PitanjeAnketaRepository.svaPitanja){
+                            if(x.idAnkete == izabranaAnketa.id && !idPitanja.contains(x.id)) {
+                                pitanjaAnkete.add(x)
+                                idPitanja.add(x.id)
+                            }
+                        }
+
                         var fragmentiPitanja: MutableList<Fragment> = mutableListOf()
                         for (x in pitanjaAnkete) {
                             val fragment = FragmentPitanje.newInstance()
-                            fragment.getArgs(x, izabranaAnketa.naziv, izabranaAnketa.nazivIstrazivanja )
+                            fragment.getArgs(x, izabranaAnketa.naziv, izabranaAnketa.nazivIstrazivanja, anketaTaken)
                             fragmentiPitanja.add(fragment)
                         }
                         val fragment = FragmentPredaj()
@@ -95,6 +108,7 @@ class FragmentAnkete : Fragment() {
 
 
     }
+
 
 
 

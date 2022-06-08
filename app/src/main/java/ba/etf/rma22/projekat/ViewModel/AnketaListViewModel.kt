@@ -1,16 +1,11 @@
 package ba.etf.rma22.projekat.ViewModel
 
-import ba.etf.rma22.projekat.data.models.Anketa
-import ba.etf.rma22.projekat.data.models.Grupa
-import ba.etf.rma22.projekat.data.models.Istrazivanje
-import ba.etf.rma22.projekat.data.models.Pitanje
-import ba.etf.rma22.projekat.data.repositories.GrupaRepository
-import ba.etf.rma22.projekat.data.repositories.AnketaRepository
-import ba.etf.rma22.projekat.data.repositories.IstrazivanjeRepository
-import ba.etf.rma22.projekat.data.repositories.PitanjeAnketaRepository
+import ba.etf.rma22.projekat.data.models.*
+import ba.etf.rma22.projekat.data.repositories.*
 import java.io.Serializable
 
 class AnketaListViewModel : Serializable{
+
     fun getMyAnkete():List<Anketa>{
         return AnketaRepository.getMyAnkete()
     }
@@ -29,26 +24,64 @@ class AnketaListViewModel : Serializable{
     }
 
     fun getUpisanaIstrazivanja(): List<Istrazivanje> {
-        return IstrazivanjeRepository.getUpisanaIstrazivanja()
+        return IstrazivanjeIGrupaRepository.getUpisanaIstrazivanja()
     }
 
     fun getIstrazivanjaByGodina(godina: Int): List<Istrazivanje>{
-        return IstrazivanjeRepository.getIstrazivanjeByGodina(godina)
+        return IstrazivanjeIGrupaRepository.getIstrazivanjeByGodina(godina)
     }
 
     fun getGrupe(istrazivanje: String): List<Grupa> {
-        return GrupaRepository.getGroupsByIstrazivanja(istrazivanje)
+        return IstrazivanjeIGrupaRepository.getGroupsByIstrazivanja(istrazivanje)
     }
 
     fun upisiStudenta(toString: String, istrazivanje: Istrazivanje, grupa: Grupa) {
         GrupaRepository.upisiStudenta(grupa)
         IstrazivanjeRepository.upisiIstrazivanje(istrazivanje)
 
-
+    }
+    suspend fun upisiStudenta(id: Int){
+        IstrazivanjeIGrupaRepository.upisiUGrupu(id)
     }
 
     fun getPitanjaAnkete(nazivAnkete: String, nazivIstrazivanja: String): List<Pitanje>{
         return PitanjeAnketaRepository.getPitanja(nazivAnkete, nazivIstrazivanja )
+    }
+    suspend fun getPitanjaAnkete(idAnkete: Int): ArrayList<Pitanje>{
+        val pitanja = ArrayList<Pitanje>()
+        for(x in PitanjeAnketaRepository.getPitanja(idAnkete))
+            pitanja.add(x)
+        return pitanja
+    }
+    suspend fun dajPodatkeSaWebServisa(){
+        AnketaRepository.getAll()
+        IstrazivanjeIGrupaRepository.getGrupe()
+        IstrazivanjeIGrupaRepository.getIstrazivanja()
+        IstrazivanjeIGrupaRepository.grupeSaIstrazivanjima()
+        AnketaRepository.popuniGrupeiIstrazivanje()
+        for (x in IstrazivanjeIGrupaRepository.getUpisaneGrupe()){
+            AnketaRepository.dodajMojeAnkete(x.naziv)
+        }
+        PitanjeAnketaRepository.dajSvaPitanja()
+    }
+
+    fun dodajAnketu(grupa: String) {
+        AnketaRepository.dodajMojeAnkete(grupa)
+    }
+
+    suspend fun zapocniAnketu(id: Int) : AnketaTaken? {
+        return TakeAnketaRepository.zapocniAnketu(id)
+
+    }
+    suspend fun posaljiOdgovore(){
+        OdgovorRepository.posaljiOdgovore()
+    }
+
+    fun dajSveOdgovore(): List<Odgovor> {
+        val odgovori = ArrayList<Odgovor>()
+        odgovori.addAll(OdgovorRepository.odgovori)
+        odgovori.addAll(OdgovorRepository.neposlaniOdgovori)
+        return odgovori
     }
 
 }

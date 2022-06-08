@@ -13,6 +13,35 @@ import java.net.URL
 
 class IstrazivanjeIGrupaRepository {
     companion object {
+        var istrazivanjaRep = ArrayList<Istrazivanje>()
+        var grupeRep = ArrayList<Grupa>()
+        var mojeGrupe = ArrayList<Grupa>()
+        var mojaIstrazivanja = ArrayList<Istrazivanje>()
+        suspend fun grupeSaIstrazivanjima(){
+            return withContext(Dispatchers.IO){
+                for(x in grupeRep){
+                   val url1 = ApiConfig.baseURL + "/grupa/${x.id}/istrazivanje"
+                    val url  = URL(url1)
+                    (url.openConnection() as? HttpURLConnection)?.run{
+                        val result = this.inputStream.bufferedReader().use{ it.readText()}
+                        val istrazivanjeData = JSONObject(result)
+                        x.nazivIstrazivanja = istrazivanjeData.getString("naziv")
+                        x.idIstrazivanja = istrazivanjeData.getInt("id")
+                    }
+
+                }
+                for(x in mojeGrupe){
+                    val url1 = ApiConfig.baseURL + "/grupa/${x.id}/istrazivanje"
+                    val url  = URL(url1)
+                    (url.openConnection() as? HttpURLConnection)?.run{
+                        val result = this.inputStream.bufferedReader().use{ it.readText()}
+                        val istrazivanjeData = JSONObject(result)
+                        x.nazivIstrazivanja = istrazivanjeData.getString("naziv")
+                        x.idIstrazivanja = istrazivanjeData.getInt("id")
+                    }
+                }
+            }
+        }
         suspend fun getIstrazivanja(offset: Int = 0): List<Istrazivanje> {
             return withContext(Dispatchers.IO) {
                 val istrazivanja = ArrayList<Istrazivanje>()
@@ -53,7 +82,7 @@ class IstrazivanjeIGrupaRepository {
                         }
                     }
                 }
-
+                istrazivanjaRep = istrazivanja
                 return@withContext istrazivanja
 
             }
@@ -76,6 +105,7 @@ class IstrazivanjeIGrupaRepository {
                         grupe.add(grupa)
                     }
                 }
+                grupeRep = grupe
                 return@withContext grupe
             }
         }
@@ -119,6 +149,8 @@ class IstrazivanjeIGrupaRepository {
                         return@withContext false
 
                 }
+                getUpisaneGrupe()
+                grupeSaIstrazivanjima()
                 return@withContext true
             }
         }
@@ -138,15 +170,38 @@ class IstrazivanjeIGrupaRepository {
                                 "",
                                 items.getJSONObject(i).getInt("id")
                             )
+                            AnketaRepository.dodajMojeAnkete(grupa.naziv)
                             grupe.add(grupa)
                         }
                     }
+                    mojeGrupe = grupe
+                    grupeSaIstrazivanjima()
+                    for(x in grupe){
+                        for(y in istrazivanjaRep)
+                            if(y.id == x.idIstrazivanja)
+                                mojaIstrazivanja.add(y)
+
+                    }
+
+                    mojaIstrazivanja.distinct()
                     return@withContext grupe
                 }
             }
             catch (e: JSONException){
                 throw JSONException(e.message)
             }
+        }
+
+        fun getIstrazivanjeByGodina(godina: Int): List<Istrazivanje> {
+            return istrazivanjaRep.filter { it.godina == godina }
+        }
+
+        fun getGroupsByIstrazivanja(istrazivanje: String): List<Grupa> {
+            return grupeRep.filter { it.nazivIstrazivanja == istrazivanje }
+        }
+
+        fun getUpisanaIstrazivanja(): List<Istrazivanje> {
+            return mojaIstrazivanja
         }
     }
 }

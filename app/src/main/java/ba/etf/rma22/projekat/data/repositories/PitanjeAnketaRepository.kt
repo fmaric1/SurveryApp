@@ -15,6 +15,7 @@ import java.net.URL
 class PitanjeAnketaRepository {
     companion object{
         val mojaPitanjaAnkete: ArrayList<PitanjeAnketa> = ArrayList()
+        var svaPitanja= ArrayList<Pitanje>()
 
         init {
             mojaPitanjaAnkete.addAll(getPitanjeAnketaData().filter { it.naziv == "RMA_P" })
@@ -77,7 +78,8 @@ class PitanjeAnketaRepository {
                                 pitanjeData.getString("naziv"),
                                 pitanjeData.getString("tekstPitanja"),
                                 opcije,
-                                pitanjeData.getInt("id")
+                                pitanjeData.getInt("id"),
+                                pitanjeData.getJSONObject("PitanjeAnketa").getInt("AnketumId")
                             )
                             pitanja.add(pitanje)
                         }
@@ -87,6 +89,15 @@ class PitanjeAnketaRepository {
 
 
             }
+        }
+
+        suspend fun dajSvaPitanja() {
+            val pitanja = ArrayList<Pitanje>()
+            for(x in AnketaRepository.sveAnkete){
+                pitanja.addAll(getPitanja(x.id))
+            }
+            svaPitanja = pitanja
+            svaPitanja.distinct()
         }
     }
 }

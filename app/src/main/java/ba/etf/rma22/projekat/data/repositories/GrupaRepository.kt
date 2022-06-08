@@ -7,7 +7,6 @@ class GrupaRepository {
     companion object {
         val grupe = ArrayList<Grupa>()
         init {
-            grupe.addAll(getGrupe().filter { it.naziv == "RMA1" })
         }
 
         fun getGroupsByIstrazivanja(nazivIstrazivanja: String): List<Grupa> {

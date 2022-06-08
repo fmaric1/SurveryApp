@@ -19,18 +19,24 @@ import kotlin.collections.ArrayList
 class AnketaRepository {
 
     companion object {
-        val mojeAnkete = ArrayList<Anketa>()
+        var mojeAnkete = ArrayList<Anketa>()
         var sveAnkete = ArrayList<Anketa>()
         init {
-            val Ankete = getAnkete()
-            for(x in GrupaRepository.getMyGroups()){
-                mojeAnkete.addAll(Ankete.filter { it.nazivGrupe == x.naziv })
-            }
-            sveAnkete.addAll(getAnkete())
-            izbaciMojeAnkete()
 
         }
 
+        fun dodajMojeAnkete(grupa: String){
+            val grupe = ArrayList<String>()
+            for(x in mojeAnkete){
+                if(!grupe.contains(x.nazivGrupe))
+                    grupe.add(x.nazivGrupe)
+            }
+            for(x in sveAnkete){
+                if (x.nazivGrupe == grupa && !grupe.contains(x.nazivGrupe))
+                    mojeAnkete.add(x)
+            }
+
+        }
         fun getMyAnkete(): List<Anketa>{
             return mojeAnkete
         }
@@ -152,7 +158,7 @@ class AnketaRepository {
                             }
                         }
                     }
-
+                    sveAnkete = ankete
                     return@withContext ankete
 
                 }
@@ -203,21 +209,26 @@ class AnketaRepository {
 
 
         fun dajNovuAnketu(anketaData: JSONObject): Anketa {
-            var datumString = anketaData.getString("datumPocetak")
-            var datumPocetak = Date(100, 4,29)
-            if(!datumString.equals("null")) {
-                datumPocetak = Date(
+            try {
+                var datumString = anketaData.getString("datumPocetak")
+                val datumPocetak = Date(
                     datumString.subSequence(0, 4).toString().toInt() - 1900,
-                    datumString.subSequence(6, 7).toString().toInt(),
+                    datumString.subSequence(5, 7).toString().toInt() - 1,
                     datumString.subSequence(8, 10).toString().toInt()
                 )
-            }
-
+                datumString = anketaData.get("datumKraj").toString()
+                var datumKraj = Date(122,8,1)
+                if (datumString != "null")
+                    datumKraj = Date(
+                        datumString.subSequence(0, 4).toString().toInt() - 1900,
+                        datumString.subSequence(5, 7).toString().toInt() - 1,
+                        datumString.subSequence(8, 10).toString().toInt()
+                    )
                 val anketa = Anketa(
                     anketaData.getString("naziv"),
                     "",
                     datumPocetak,
-                    null,
+                    datumKraj,
                     null,
                     anketaData.getInt("trajanje"),
                     "",
@@ -227,6 +238,43 @@ class AnketaRepository {
                 )
                 return anketa
 
+
+            }catch (e: JSONException){
+                throw JSONException(e.message)
+            }
+        }
+
+        suspend fun popuniGrupeiIstrazivanje() {
+            val noveAnkete = ArrayList<Anketa>()
+            return withContext(Dispatchers.IO) {
+                for (x in IstrazivanjeIGrupaRepository.grupeRep) {
+                    val url1 = ApiConfig.baseURL + "/grupa/${x.id}/ankete"
+                    val url = URL(url1)
+                    (url.openConnection() as? HttpURLConnection)?.run{
+                        val result = this.inputStream.bufferedReader().use { it.readText() }
+                        val items = JSONArray(result)
+                        for(i in 0 until items.length()){
+                            val anketaData = items.getJSONObject(i).getJSONObject("AnketaiGrupe")
+                            val anketa = sveAnkete.first { it.id == anketaData.getInt("AnketumId") }
+                            noveAnkete.add(Anketa(
+                                anketa.naziv,
+                                x.nazivIstrazivanja,
+                                anketa.datumPocetak,
+                                anketa.datumKraj,
+                                anketa.datumRada,
+                                anketa.trajanje,
+                                x.naziv,
+                                anketa.progress,
+                                anketa.status,
+                                anketa.id
+                            ))
+
+                        }
+                    }
+
+                }
+                sveAnkete = noveAnkete
+            }
 
         }
     }

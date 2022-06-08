@@ -18,6 +18,7 @@ import kotlin.collections.ArrayList
 class TakeAnketaRepository {
 
     companion object {
+        val poceteAnkete = ArrayList<AnketaTaken>()
         suspend fun zapocniAnketu(idAnkete: Int): AnketaTaken? {
             try{
 
@@ -47,20 +48,21 @@ class TakeAnketaRepository {
 
                     val anketaData = JSONObject(response.toString())
 
-                   /* val datumString = anketaData.getString("datumRada")
-                    val datumRada = Date(
-                        datumString.subSequence(0, 4).toString().toInt() - 1900,
-                        datumString.subSequence(6, 8).toString().toInt(),
-                        datumString.subSequence(10, 12).toString().toInt()
-                    )*/
+                   val datumString = anketaData.get("datumRada").toString()
 
-                    val anketaTaken = AnketaTaken(
-                        anketaData.getInt("id"),
-                        anketaData.getString("student"),
-                        anketaData.getInt("progres"),
-                        Date(100,29,4),
-                        anketaData.getInt("AnketumId")
-                    )
+                        val datumRada = Date(
+                            datumString.subSequence(0, 4).toString().toInt() - 1900,
+                            datumString.subSequence(5, 7).toString().toInt() - 1,
+                            datumString.subSequence(8, 10).toString().toInt()
+                        )
+                        val anketaTaken = AnketaTaken(
+                            anketaData.getInt("id"),
+                            anketaData.getString("student"),
+                            anketaData.getInt("progres"),
+                            datumRada,
+                            anketaData.getInt("AnketumId")
+                        )
+                    poceteAnkete.add(anketaTaken)
                     return@withContext anketaTaken
                 }
 
@@ -71,7 +73,7 @@ class TakeAnketaRepository {
             }
         }
 
-        suspend fun getPoceteAnkete(): ArrayList<AnketaTaken>? {
+        suspend fun getPoceteAnkete(): List<AnketaTaken>? {
             try {
                 val ankete = ArrayList<AnketaTaken>()
                 return withContext(Dispatchers.IO) {
@@ -83,26 +85,31 @@ class TakeAnketaRepository {
                         val items = JSONArray(result)
                         for (i in 0 until items.length()) {
                             val anketaData = items.getJSONObject(i)
-                            /*val datumString = anketaData.getString("datumRada")
-                            val datumRada = Date(
+                            val datumString = anketaData.get("datumRada").toString()
+                            var datumRada = Date()
+                            datumRada = Date(
                                 datumString.subSequence(0, 4).toString().toInt() - 1900,
-                                datumString.subSequence(6, 8).toString().toInt(),
-                                datumString.subSequence(10, 12).toString().toInt()
-                            )*/
+                                datumString.subSequence(5, 7).toString().toInt() - 1,
+                                datumString.subSequence(8, 10).toString().toInt()
+                            )
                             ankete.add(
                                 AnketaTaken(
                                     anketaData.getInt("id"),
                                     anketaData.getString("student"),
                                     anketaData.getInt("progres"),
-                                    Date(100,4,29),
+                                    datumRada,
                                     anketaData.getInt("AnketumId")
                                 )
                             )
                         }
+                        for(x in ankete){
+                            if(!poceteAnkete.contains(x))
+                                poceteAnkete.add(x)
+                        }
+                        if(ankete.size == 0)
+                            return@withContext null
+                        return@withContext ankete
                     }
-
-
-                    return@withContext ankete
                 }
             }
             catch (e: JSONException){

@@ -13,6 +13,8 @@ import java.net.URL
 
 class OdgovorRepository {
     companion object {
+        val odgovori = ArrayList<Odgovor>()
+        val neposlaniOdgovori = ArrayList<Odgovor>()
         suspend fun getOdgovoriAnketa(idAnkete: Int): List<Odgovor> {
             try {
                 return withContext(Dispatchers.IO) {
@@ -100,6 +102,24 @@ class OdgovorRepository {
                 return@withContext progressInt
             }
 
+        }
+
+        fun dodajNeposlani(idPitanja: Int, odgovoreno: Int, idAnketaTaken: Int) {
+            val pomocniNiz = ArrayList<Pair<Int,Int>>()
+            for(x in neposlaniOdgovori )
+                pomocniNiz.add(Pair(x.id,x.idAnketaTaken))
+            for(x in odgovori )
+                pomocniNiz.add(Pair(x.id,x.idAnketaTaken))
+            if(!pomocniNiz.contains(Pair(idPitanja, idAnketaTaken)))
+            neposlaniOdgovori.add(
+                Odgovor(idPitanja,odgovoreno,idAnketaTaken)
+            )
+        }
+        suspend fun posaljiOdgovore(){
+            for(x in neposlaniOdgovori){
+                postaviOdgovorAnketa(x.idAnketaTaken,x.id,x.odgovoreno)
+            }
+            neposlaniOdgovori.clear()
         }
     }
 }

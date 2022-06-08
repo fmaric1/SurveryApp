@@ -11,9 +11,12 @@ import android.widget.Button
 import android.widget.Spinner
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 import ba.etf.rma22.projekat.ViewModel.AnketaListViewModel
 import ba.etf.rma22.projekat.view.FragmentPoruka
+import kotlinx.coroutines.launch
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 private const val ARG_PARAM2 = "param2"
@@ -58,18 +61,26 @@ class FragmentIstrazivanje : Fragment() {
             }
 
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val istrazivanja: ArrayList<String> = ArrayList()
+                var istrazivanja: ArrayList<String> = ArrayList()
                 if(position ==0)
                     upisDugme.isEnabled = false
                 else{
                     var data = anketaListViewModel.getIstrazivanjaByGodina(position)
 
                     istrazivanja.add("")
+
                     for (x in data) {
-                        val y = anketaListViewModel.getUpisanaIstrazivanja()
-                        if(!anketaListViewModel.getUpisanaIstrazivanja().contains(x))
                             istrazivanja.add(x.naziv)
                     }
+                    istrazivanja.distinct()
+                    val novaIstrazivanja = ArrayList<String>()
+                    val mojaIstrazivanja = anketaListViewModel.getUpisanaIstrazivanja().map { it.naziv }
+                    for(x in istrazivanja){
+                        if(!mojaIstrazivanja.contains(x)){
+                            novaIstrazivanja.add(x)
+                        }
+                    }
+                    istrazivanja = novaIstrazivanja
 
                     istrazivanjeSpinner.adapter = ArrayAdapter<String>(
                             activity?.baseContext!!,
@@ -121,6 +132,11 @@ class FragmentIstrazivanje : Fragment() {
                                             val grupaOdabir: Int = grupaSpinner.selectedItemPosition
                                             upisiPressed = true
                                             if(grupaSpinner.selectedItemPosition > 0) {
+                                                lifecycleScope.launch{
+                                                    anketaListViewModel.upisiStudenta(data1[grupaOdabir-1].id)
+                                                    anketaListViewModel.getMyAnkete()
+                                                    anketaListViewModel.dodajAnketu(data1[grupaOdabir-1].naziv)
+                                                }
                                                 anketaListViewModel.upisiStudenta(
                                                         godinaOdabir.toString(),
                                                         data[istrazivanjeOdabir - 1],

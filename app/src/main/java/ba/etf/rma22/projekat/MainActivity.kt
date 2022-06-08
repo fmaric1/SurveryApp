@@ -7,15 +7,13 @@ import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
-import ba.etf.rma22.projekat.data.models.Anketa
-import ba.etf.rma22.projekat.data.repositories.AnketaRepository
+import ba.etf.rma22.projekat.ViewModel.AnketaListViewModel
 import ba.etf.rma22.projekat.view.FragmentAnkete
 import ba.etf.rma22.projekat.view.FragmentPoruka
-import ba.etf.rma22.projekat.view.FragmentPredaj
 import ba.etf.rma22.projekat.view.ViewPagerAdapter
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.fragment_ankete.*
+import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
@@ -23,9 +21,11 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var viewPager: ViewPager2
     private lateinit var viewPagerAdapter: ViewPagerAdapter
+    private val anketaListViewModel = AnketaListViewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        lifecycleScope.launch{anketaListViewModel.dajPodatkeSaWebServisa() }
         setContentView(R.layout.activity_main)
         viewPager = findViewById(R.id.pager)
         val fragments =
