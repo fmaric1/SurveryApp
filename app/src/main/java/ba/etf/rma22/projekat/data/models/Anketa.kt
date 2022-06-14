@@ -1,8 +1,11 @@
 package ba.etf.rma22.projekat.data.models
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import java.util.*
 
+@Entity
 data class Anketa (
         @SerializedName("naziv")  var naziv: String,
         @SerializedName("nazivIstrazivanja") val nazivIstrazivanja: String,
@@ -13,6 +16,7 @@ data class Anketa (
         @SerializedName("nazivGrupe")val nazivGrupe: String,
         @SerializedName("progres")var progress: Float,
         @SerializedName("status")var status: statusAnkete,
-        @SerializedName("anketaId")val id: Int = 0){
+        @SerializedName("anketaId")val id: Int = 0,
+        @PrimaryKey(autoGenerate = true) val uid: Int = 0){
 
 }

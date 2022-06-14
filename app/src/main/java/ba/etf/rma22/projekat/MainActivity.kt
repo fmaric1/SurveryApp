@@ -2,18 +2,22 @@ package ba.etf.rma22.projekat
 
 
 
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import ba.etf.rma22.projekat.ViewModel.AnketaListViewModel
+import ba.etf.rma22.projekat.data.repositories.AccountRepository
 import ba.etf.rma22.projekat.view.FragmentAnkete
 import ba.etf.rma22.projekat.view.FragmentPoruka
 import ba.etf.rma22.projekat.view.ViewPagerAdapter
 import kotlinx.coroutines.launch
+import java.lang.Exception
 
 
 class MainActivity : AppCompatActivity() {
@@ -25,8 +29,26 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        lifecycleScope.launch{anketaListViewModel.dajPodatkeSaWebServisa() }
+        try {
+            lifecycleScope.launch { anketaListViewModel.dajPodatkeSaWebServisa() }
+        }catch (e: Exception){
+
+        }
         setContentView(R.layout.activity_main)
+        val uri: Uri? = getIntent().getData()
+        if(uri != null ){
+
+            val payload: String? = intent.getStringExtra("payload")
+            if(payload != null )
+            AccountRepository.postaviHash(payload)
+            try {
+                lifecycleScope.launch { anketaListViewModel.dajPodatkeSaWebServisa() }
+            }catch (e: Exception){
+
+            }
+
+        }
+
         viewPager = findViewById(R.id.pager)
         val fragments =
             mutableListOf(

@@ -1,4 +1,9 @@
 package ba.etf.rma22.projekat.data.models
 
-data class Istrazivanje(val naziv: String, val godina: Int, val id: Int = 0) {
+import androidx.room.PrimaryKey
+
+data class Istrazivanje(
+    val naziv: String,
+    val godina: Int,
+    @PrimaryKey val id: Int = 0) {
 }
