@@ -1,9 +1,10 @@
 package ba.etf.rma22.projekat.data.repositories
 
+import android.content.Context
 import ba.etf.rma22.projekat.data.staticdata.getAnkete
 import ba.etf.rma22.projekat.data.models.Anketa
+import ba.etf.rma22.projekat.data.models.AppDatabase
 import ba.etf.rma22.projekat.data.models.statusAnkete
-import com.google.gson.internal.Streams.parse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -12,7 +13,6 @@ import org.json.JSONObject
 import java.lang.IllegalArgumentException
 import java.net.HttpURLConnection
 import java.net.URL
-import java.time.LocalDate.parse
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -21,8 +21,12 @@ class AnketaRepository {
     companion object {
         var mojeAnkete = ArrayList<Anketa>()
         var sveAnkete = ArrayList<Anketa>()
+        var context : Context? = null
         init {
 
+        }
+        fun setCont(_context: Context?){
+            context = _context
         }
 
         fun dodajMojeAnkete(grupa: String){
@@ -129,6 +133,7 @@ class AnketaRepository {
 
         suspend fun getAll(offset:Int = 0): List<Anketa>{
             try {
+
                 return withContext(Dispatchers.IO) {
                     val ankete = ArrayList<Anketa>()
                     if (offset == 0) {
@@ -159,6 +164,10 @@ class AnketaRepository {
                         }
                     }
                     sveAnkete = ankete
+                    var db = AppDatabase.getInstance(context!!)
+                    for(x in sveAnkete){
+                        db.anketaDao().insert(x)
+                    }
                     return@withContext ankete
 
                 }

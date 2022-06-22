@@ -16,7 +16,6 @@ data class Anketa (
         @SerializedName("nazivGrupe")val nazivGrupe: String,
         @SerializedName("progres")var progress: Float,
         @SerializedName("status")var status: statusAnkete,
-        @SerializedName("anketaId")val id: Int = 0,
-        @PrimaryKey(autoGenerate = true) val uid: Int = 0){
+        @PrimaryKey()@SerializedName("anketaId")val id: Int = 0){
 
 }

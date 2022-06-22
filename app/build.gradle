@@ -1,25 +1,27 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-    id 'kotlin-android-extensions'
     id 'com.google.secrets_gradle_plugin' version '0.4'
     id 'kotlin-kapt'
+
 }
 
 android {
     compileSdkVersion 31
-    buildToolsVersion "30.0.2"
+    buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "ba.etf.rma22.projekat"
         minSdkVersion 24
-        targetSdkVersion 31
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
         buildConfigField("String", "HASH_KEY", HASH_KEY)
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-
+    buildFeatures {
+        viewBinding = true
+    }
     buildTypes {
         debug{
 
@@ -64,8 +66,12 @@ dependencies {
     androidTestImplementation 'androidx.test:core-ktx:1.4.0'
     androidTestImplementation 'androidx.test.ext:junit-ktx:1.1.3'
     testImplementation("org.hamcrest:hamcrest:2.2")
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.4.0'
+    androidTestImplementation ('androidx.test.espresso:espresso-core:3.4.0'){
+        exclude module: "protobuf-lite"
+    }
+    androidTestImplementation('androidx.test.espresso:espresso-contrib:3.4.0') {
+        exclude module: "protobuf-lite"
+    }
     androidTestImplementation 'androidx.test.espresso:espresso-intents:3.4.0'
     compileOnly 'com.google.android.wearable:wearable:2.6.0'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9"
@@ -76,6 +82,6 @@ dependencies {
     implementation("androidx.room:room-runtime:2.4.0")
     annotationProcessor "androidx.room:room-compiler:2.4.0"
     implementation("androidx.room:room-ktx:2.4.0")
-    //kapt("androidx.room:room-compiler:2.4.0")
+    kapt("androidx.room:room-compiler:2.4.0")
 
 }

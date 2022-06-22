@@ -1,6 +1,12 @@
 package ba.etf.rma22.projekat
 
-
+import android.content.Context
+import android.database.sqlite.SQLiteDatabase
+import androidx.test.core.app.ActivityScenario
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.espresso.matcher.ViewMatchers.assertThat
+import androidx.test.ext.junit.rules.ActivityScenarioRule
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import ba.etf.rma22.projekat.data.models.*
 import ba.etf.rma22.projekat.data.repositories.*
 
@@ -11,37 +17,126 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import org.hamcrest.CoreMatchers
-import org.hamcrest.CoreMatchers.`is`
-import org.hamcrest.CoreMatchers.hasItem
-import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.MatcherAssert
+import org.hamcrest.Matchers.*
+import org.junit.BeforeClass
 import org.junit.FixMethodOrder
+import org.junit.Rule
 import org.junit.Test
+
+import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import java.net.URL
 
 
+/**
+ * Instrumented test, which will execute on an Android device.
+ *
+ * See [testing documentation](http://d.android.com/tools/testing).
+ */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class RepositoryUnitTest {
-    suspend fun obrisi(){
-        var client: OkHttpClient = OkHttpClient()
-        var builder: Request.Builder = Request.Builder()
-            .url(URL(ApiConfig.baseURL + "/student/" + AccountRepository.acHash + "/upisugrupeipokusaji"))
-            .delete()
-        var request: Request = builder.build()
-        withContext(Dispatchers.IO) {
-            var response: Response = client.newCall(request).execute()
+@RunWith(AndroidJUnit4::class)
+class DBTest {
+
+    private val countOdgovor = "SELECT COUNT(*) AS broj_odgovora FROM Odgovor"
+    private val countIstrazivanje = "SELECT COUNT(*) AS broj_istrazivanja FROM Istrazivanje"
+    private val countGrupa = "SELECT COUNT(*) AS broj_grupa FROM Grupa"
+    private val countAnketa = "SELECT COUNT(*) AS broj_anketa FROM Anketa"
+    private val countPitanje = "SELECT COUNT(*) AS broj_pitanja FROM Pitanje"
+
+    private val describeOdgovor = "pragma table_info('Odgovor')"
+    private val describeIstrazivanje = "pragma table_info('Istrazivanje')"
+    private val describeGrupa = "pragma table_info('Grupa')"
+    private val describeAnketa = "pragma table_info('Anketa')"
+    private val describeAccount = "pragma table_info('Account')"
+    private val describePitanje = "pragma table_info('Pitanje')"
+    private val describeTable = mapOf(
+        "Odgovor" to describeOdgovor,
+        "Istrazivanje" to describeIstrazivanje,
+        "Grupa" to describeGrupa,
+        "Pitanje" to describePitanje,
+        "Anketa" to describeAnketa,
+        "Account" to describeAccount
+    )
+    private val kolone = mapOf(
+        "Odgovor" to arrayListOf("id", "odgovoreno"),
+        "Grupa" to arrayListOf("id", "naziv"),
+        "Account" to arrayListOf("acHash"),
+        "Istrazivanje" to arrayListOf("id", "naziv", "godina"),
+        "Anketa" to arrayListOf("id", "naziv", "datumPocetak", "datumKraj", "trajanje"),
+        "Pitanje" to arrayListOf("id", "naziv", "tekstPitanja", "opcije")
+    )
+    @get:Rule
+    val intentsTestRule = ActivityScenarioRule(MainActivity::class.java)
+
+
+    companion object {
+        var pocentiHash: String = ""
+        private lateinit var context: Context
+        private var ktid: Int = 0
+        lateinit var db: SQLiteDatabase
+        @BeforeClass
+        @JvmStatic
+        fun createDb() = runBlocking {
+            val scenario = ActivityScenario.launch(
+                MainActivity::class.java
+            )
+            context = ApplicationProvider.getApplicationContext<Context>()
+
+            var client: OkHttpClient = OkHttpClient()
+            var builder: Request.Builder = Request.Builder()
+                .url(URL(ApiConfig.baseURL + "/student/" + AccountRepository.getHash() + "/upisugrupeipokusaji"))
+                .delete()
+            var request: Request = builder.build()
+            withContext(Dispatchers.IO) {
+                var response: Response = client.newCall(request).execute()
+                var odgovor: String = response.body().toString()
+            }
+
+            db = SQLiteDatabase.openDatabase(context.getDatabasePath("RMA22DB").absolutePath,null,SQLiteDatabase.OPEN_READONLY)
+
+
         }
     }
+
+    private fun executeCountAndCheck(query: String, column: String, value: Long) {
+        var rezultat = db.rawQuery(query,null)
+        rezultat.moveToFirst()
+        var brojOdgovora = rezultat.getLong(0)
+        MatcherAssert.assertThat(brojOdgovora, `is`(equalTo(value)))
+    }
+
+    private fun checkColumns(query: String, naziv: String) {
+        var rezultat = db.rawQuery(query,null)
+        val list = (1..rezultat.count).map {
+            rezultat.moveToNext()
+            rezultat.getString(1)
+        }
+        assertThat(list, hasItems(*kolone[naziv]!!.toArray()))
+    }
+
+
     @Test
     fun a0_pripremiPocetak() = runBlocking {
-        obrisi()
+        AccountRepository.postaviHash(AccountRepository.acHash)
+        assert(true)
     }
 
     @Test
+    fun a01_postojeTabele() = runBlocking {
+        for(tabela in arrayOf("Odgovor","Pitanje","Anketa","Istrazivanje")){
+            for (kolona in kolone[tabela]!!){
+                checkColumns(describeTable[tabela]!!,tabela)
+            }
+        }
+    }
+    @Test
     fun a1_getIstrazivanja() = runBlocking {
-        var istrazivanja = IstrazivanjeIGrupaRepository.getIstrazivanja()
-        assertThat(istrazivanja,CoreMatchers.notNullValue())
-        assertThat(istrazivanja?.size,CoreMatchers.equalTo(6))
+        var istrazivanja = IstrazivanjeIGrupaRepository.getIstrazivanja(1)
+        assertThat(istrazivanja, CoreMatchers.notNullValue())
+        assertThat(istrazivanja?.size,CoreMatchers.equalTo(5))
+        executeCountAndCheck(countIstrazivanje,"broj_istrazivanja",5)
+
 
     }
 
@@ -50,6 +145,7 @@ class RepositoryUnitTest {
         var grupe = IstrazivanjeIGrupaRepository.getGrupe()
         assertThat(grupe,CoreMatchers.notNullValue())
         assertThat(grupe?.size,CoreMatchers.equalTo(8))
+        executeCountAndCheck(countGrupa,"broj_grupa",8)
     }
     @Test
     fun a3_getUpisaneGrupe() = runBlocking {
@@ -99,6 +195,7 @@ class RepositoryUnitTest {
         var poceti = TakeAnketaRepository.getPoceteAnkete()
         var pitanja = PitanjeAnketaRepository.getPitanja(poceti!![poceti.size-1]?.AnketumId)
         var result = OdgovorRepository.postaviOdgovorAnketa(poceti!![poceti.size-1]?.id,pitanja!![0]?.id,1)
+        executeCountAndCheck(countOdgovor,"broj_odgovora",1)
         assertThat(result,CoreMatchers.notNullValue())
         assertThat(result,CoreMatchers.equalTo(60))
         assertThat(OdgovorRepository.getOdgovoriAnketa(poceti!![poceti.size-1]?.AnketumId)!!.size,CoreMatchers.equalTo(1))
@@ -114,6 +211,7 @@ class RepositoryUnitTest {
     @Test
     fun a9_provjeriAnkete() = runBlocking {
         assertThat(AnketaRepository.getAll()!!.size,CoreMatchers.equalTo(6))
+        executeCountAndCheck(countAnketa,"broj_anketa",6)
     }
 
     @Test

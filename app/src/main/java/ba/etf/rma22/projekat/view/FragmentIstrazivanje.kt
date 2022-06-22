@@ -29,13 +29,14 @@ class FragmentIstrazivanje : Fragment() {
     private lateinit var istrazivanjeSpinner: Spinner
     private lateinit var grupaSpinner: Spinner
     private lateinit var upisDugme: Button
-    private var anketaListViewModel = AnketaListViewModel()
+    private lateinit var anketaListViewModel : AnketaListViewModel
 
     override fun onCreate(savedInstantceState: Bundle?){
         super.onCreate(savedInstantceState)
         arguments?.let{
             param2 = it.getString(ARG_PARAM2)
         }
+        anketaListViewModel = AnketaListViewModel(requireActivity().application)
     }
     override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?,

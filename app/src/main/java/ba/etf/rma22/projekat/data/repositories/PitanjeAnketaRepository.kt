@@ -1,5 +1,7 @@
 package ba.etf.rma22.projekat.data.repositories
 
+import android.content.Context
+import ba.etf.rma22.projekat.data.models.AppDatabase
 import ba.etf.rma22.projekat.data.models.Pitanje
 import ba.etf.rma22.projekat.data.models.PitanjeAnketa
 import ba.etf.rma22.projekat.data.staticdata.getPitanjaData
@@ -16,7 +18,10 @@ class PitanjeAnketaRepository {
     companion object{
         val mojaPitanjaAnkete: ArrayList<PitanjeAnketa> = ArrayList()
         var svaPitanja= ArrayList<Pitanje>()
-
+        var context : Context? = null
+        fun setCont(_context: Context?) {
+            context = _context
+        }
         init {
             mojaPitanjaAnkete.addAll(getPitanjeAnketaData().filter { it.naziv == "RMA_P" })
         }
@@ -77,14 +82,17 @@ class PitanjeAnketaRepository {
                             val pitanje = Pitanje(
                                 pitanjeData.getString("naziv"),
                                 pitanjeData.getString("tekstPitanja"),
-                                opcije,
+                                0,
                                 pitanjeData.getInt("id"),
                                 pitanjeData.getJSONObject("PitanjeAnketa").getInt("AnketumId")
                             )
                             pitanja.add(pitanje)
                         }
                     }
-
+                var db = AppDatabase.getInstance(AnketaRepository.context!!)
+                for(x in pitanja){
+                    db.pitanjeDao().insert(x)
+                }
                     return@withContext pitanja
 
 

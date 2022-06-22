@@ -1,7 +1,9 @@
 package ba.etf.rma22.projekat.data.repositories
 
+import android.content.Context
 import ba.etf.rma22.projekat.data.models.Anketa
 import ba.etf.rma22.projekat.data.models.AnketaTaken
+import ba.etf.rma22.projekat.data.models.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -19,6 +21,11 @@ class TakeAnketaRepository {
 
     companion object {
         val poceteAnkete = ArrayList<AnketaTaken>()
+        var context : Context? = null
+
+        fun setCont(_context :Context){
+            context = _context
+        }
         suspend fun zapocniAnketu(idAnkete: Int): AnketaTaken? {
             try{
 
@@ -63,6 +70,10 @@ class TakeAnketaRepository {
                             anketaData.getInt("AnketumId")
                         )
                     poceteAnkete.add(anketaTaken)
+                    var db = AppDatabase.getInstance(context!!)
+                    for(x in poceteAnkete){
+                        db.takeAnketaDao().insert(x)
+                    }
                     return@withContext anketaTaken
                 }
 

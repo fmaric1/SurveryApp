@@ -4,11 +4,18 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 
 @Database(entities = arrayOf(Anketa::class, AnketaTaken::class, Grupa::class,
-                    Istrazivanje::class, Odgovor::class, Pitanje::class), version = 1)
+                    Istrazivanje::class, Odgovor::class, Pitanje::class, Opcije::class), version = 3, exportSchema = false)
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
-
+    abstract fun anketaDao(): AnketaDAO
+    abstract fun grupaDao(): GrupaDAO
+    abstract fun istrazivanjeDao(): IstrazivanjeDAO
+    abstract fun odgovorDao(): OdgovorDAO
+    abstract fun pitanjeDao(): PitanjeDAO
+    abstract fun takeAnketaDao(): TakeAnketaDAO
 
     companion object {
         private var INSTANCE: AppDatabase? = null
@@ -27,6 +34,6 @@ abstract class AppDatabase : RoomDatabase() {
                 context.applicationContext,
                 AppDatabase::class.java,
                 "RMA22DB"
-            ).build()
+            ).fallbackToDestructiveMigration().build()
     }
 }

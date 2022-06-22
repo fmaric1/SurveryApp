@@ -23,9 +23,7 @@ import ba.etf.rma22.projekat.data.repositories.AnketaRepository
 import ba.etf.rma22.projekat.data.repositories.AnketaRepository.Companion.updateProgressAnkete
 import ba.etf.rma22.projekat.data.repositories.OdgovorRepository
 import ba.etf.rma22.projekat.data.repositories.PitanjeAnketaRepository
-import kotlinx.android.synthetic.main.anketa_item.*
-import kotlinx.android.synthetic.main.fragment_istrazivanja.*
-import kotlinx.android.synthetic.main.fragment_pitanje.view.*
+
 import kotlinx.coroutines.launch
 
 
@@ -43,15 +41,16 @@ class FragmentPitanje : Fragment() {
     private var istrazivanjeNaziv: String = ""
     private var idPitanja: String = ""
     private var idAnketaTaken: Int = 0
-    private var anketaListViewModel = AnketaListViewModel()
+    private lateinit var anketaListViewModel : AnketaListViewModel
     private var idPitanjaInt = 0
 
     public fun getArgs(pitanje: Pitanje, anketa: String, istrazivanje: String, anketaTaken: AnketaTaken?): FragmentPitanje{
         val args = Bundle()
         val fragment = FragmentPitanje()
+        anketaListViewModel = AnketaListViewModel(requireActivity().application)
         idPitanja = pitanje.naziv
         pitanjeTekst = pitanje.tekstPitanja
-        pitanjeOdgovori = pitanje.opcije
+        pitanjeOdgovori = listOf("","","")
         anketaNaziv = anketa
         istrazivanjeNaziv = istrazivanje
         if (anketaTaken != null) {
@@ -95,7 +94,9 @@ class FragmentPitanje : Fragment() {
             override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 if(AnketaRepository.dajStatusAnkete(anketaNaziv) == statusAnkete.AKTIVAN_NIJE_URADEN) {
                     PitanjeAnketaRepository.updateOdgovor(idPitanja, position + 1)
+                    lifecycleScope.launch {
                     OdgovorRepository.dodajNeposlani(idPitanjaInt, position + 1, idAnketaTaken)
+                    }
                     updateBojuOdogovora(idPitanja, position + 1)
                     updateProgressAnkete(anketaNaziv, istrazivanjeNaziv)
                 }

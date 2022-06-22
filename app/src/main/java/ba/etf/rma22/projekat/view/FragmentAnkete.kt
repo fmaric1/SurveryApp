@@ -32,13 +32,15 @@ class FragmentAnkete : Fragment() {
     private lateinit var anketeAdapter: AnketaListAdapter
     private lateinit var spinner: Spinner
     private lateinit var adapter: ArrayAdapter<CharSequence>
-    private var anketaListViewModel = AnketaListViewModel()
+    private lateinit var anketaListViewModel : AnketaListViewModel
 
     override fun onCreate(savedInstantceState: Bundle?){
         super.onCreate(savedInstantceState)
         arguments?.let{
             param1 = it.getString(ARG_PARAM1)
         }
+        anketaListViewModel = AnketaListViewModel(requireActivity().application)
+
     }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                           savedInstanceState: Bundle?): View? = inflater.inflate(R.layout.fragment_ankete, container, false)

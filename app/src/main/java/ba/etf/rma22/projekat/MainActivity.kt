@@ -2,6 +2,7 @@ package ba.etf.rma22.projekat
 
 
 
+import android.app.Application
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -12,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import ba.etf.rma22.projekat.ViewModel.AnketaListViewModel
+import ba.etf.rma22.projekat.data.models.AppDatabase
 import ba.etf.rma22.projekat.data.repositories.AccountRepository
 import ba.etf.rma22.projekat.view.FragmentAnkete
 import ba.etf.rma22.projekat.view.FragmentPoruka
@@ -25,10 +27,12 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var viewPager: ViewPager2
     private lateinit var viewPagerAdapter: ViewPagerAdapter
-    private val anketaListViewModel = AnketaListViewModel()
+    private lateinit var  anketaListViewModel : AnketaListViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        anketaListViewModel = AnketaListViewModel(application)
+        anketaListViewModel.postaviContext()
         try {
             lifecycleScope.launch { anketaListViewModel.dajPodatkeSaWebServisa() }
         }catch (e: Exception){

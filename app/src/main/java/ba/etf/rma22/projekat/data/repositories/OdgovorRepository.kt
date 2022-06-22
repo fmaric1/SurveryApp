@@ -1,5 +1,7 @@
 package ba.etf.rma22.projekat.data.repositories
 
+import android.content.Context
+import ba.etf.rma22.projekat.data.models.AppDatabase
 import ba.etf.rma22.projekat.data.models.Odgovor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -15,6 +17,10 @@ class OdgovorRepository {
     companion object {
         val odgovori = ArrayList<Odgovor>()
         val neposlaniOdgovori = ArrayList<Odgovor>()
+        var context: Context? = null
+        fun setCont(_context: Context?) {
+            context = _context
+        }
         suspend fun getOdgovoriAnketa(idAnkete: Int): List<Odgovor> {
             try {
                 return withContext(Dispatchers.IO) {
@@ -43,7 +49,10 @@ class OdgovorRepository {
 
                         }
                     }
-
+                    val db = AppDatabase.getInstance(context!!)
+                    for(x in odgovori){
+                        db.odgovorDao().insert(x)
+                    }
                     return@withContext odgovori
 
 
@@ -55,6 +64,10 @@ class OdgovorRepository {
 
         suspend fun postaviOdgovorAnketa(idAnketaTaken: Int, idPitanje: Int, odgovor: Int): Int {
             return withContext(Dispatchers.IO) {
+
+                val db = AppDatabase.getInstance(context!!)
+                db.odgovorDao().insert(Odgovor(idPitanje,odgovor,idAnketaTaken))
+
                 val url1 = ApiConfig.baseURL + "/student/" + AccountRepository.acHash + "/anketataken/$idAnketaTaken/odgovor"
                 val url = URL(url1)
                 val con = (url.openConnection() as HttpURLConnection)
@@ -104,16 +117,16 @@ class OdgovorRepository {
 
         }
 
-        fun dodajNeposlani(idPitanja: Int, odgovoreno: Int, idAnketaTaken: Int) {
+        suspend fun dodajNeposlani(idPitanja: Int, odgovoreno: Int, idAnketaTaken: Int) {
             val pomocniNiz = ArrayList<Pair<Int,Int>>()
+            val odgovor  = Odgovor(idPitanja,odgovoreno,idAnketaTaken)
             for(x in neposlaniOdgovori )
                 pomocniNiz.add(Pair(x.id,x.idAnketaTaken))
             for(x in odgovori )
                 pomocniNiz.add(Pair(x.id,x.idAnketaTaken))
-            if(!pomocniNiz.contains(Pair(idPitanja, idAnketaTaken)))
-            neposlaniOdgovori.add(
-                Odgovor(idPitanja,odgovoreno,idAnketaTaken)
-            )
+            if(!pomocniNiz.contains(Pair(idPitanja, idAnketaTaken))) {
+                neposlaniOdgovori.add(odgovor)
+            }
         }
         suspend fun posaljiOdgovore(){
             for(x in neposlaniOdgovori){
@@ -121,5 +134,7 @@ class OdgovorRepository {
             }
             neposlaniOdgovori.clear()
         }
+
+
     }
 }

@@ -1,6 +1,8 @@
 package ba.etf.rma22.projekat.data.repositories
 
+import android.content.Context
 import ba.etf.rma22.projekat.data.models.Anketa
+import ba.etf.rma22.projekat.data.models.AppDatabase
 import ba.etf.rma22.projekat.data.models.Grupa
 import ba.etf.rma22.projekat.data.models.Istrazivanje
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +19,9 @@ class IstrazivanjeIGrupaRepository {
         var grupeRep = ArrayList<Grupa>()
         var mojeGrupe = ArrayList<Grupa>()
         var mojaIstrazivanja = ArrayList<Istrazivanje>()
+        var context : Context? = null
+
+
         suspend fun grupeSaIstrazivanjima(){
             return withContext(Dispatchers.IO){
                 for(x in grupeRep){
@@ -43,6 +48,8 @@ class IstrazivanjeIGrupaRepository {
             }
         }
         suspend fun getIstrazivanja(offset: Int = 0): List<Istrazivanje> {
+            val db = AppDatabase.getInstance(context!!)
+            db.istrazivanjeDao().deleteAll()
             return withContext(Dispatchers.IO) {
                 val istrazivanja = ArrayList<Istrazivanje>()
                 if (offset == 0) {
@@ -54,13 +61,14 @@ class IstrazivanjeIGrupaRepository {
                             val items = JSONArray(result)
                             for (j in 0 until items.length()) {
                                 val istrazivanjeData = items.getJSONObject(j)
-                                istrazivanja.add(
+                                val istrazivanje =
                                     Istrazivanje(
                                         istrazivanjeData.getString("naziv"),
                                         istrazivanjeData.getInt("godina"),
                                         istrazivanjeData.getInt("id")
                                     )
-                                )
+                                db.istrazivanjeDao().insert(istrazivanje)
+                                istrazivanja.add(istrazivanje)
                             }
                         }
                     }
@@ -72,17 +80,21 @@ class IstrazivanjeIGrupaRepository {
                         val items = JSONArray(result)
                         for (j in 0 until items.length()) {
                             val istrazivanjeData = items.getJSONObject(j)
-                            istrazivanja.add(
+                            val istrazivanje =
                                 Istrazivanje(
-                                    istrazivanjeData.getString(" naziv"),
+                                    istrazivanjeData.getString("naziv"),
                                     istrazivanjeData.getInt("godina"),
                                     istrazivanjeData.getInt("id")
                                 )
-                            )
+                            db.istrazivanjeDao().insert(istrazivanje)
+                            istrazivanja.add(istrazivanje)
                         }
                     }
                 }
                 istrazivanjaRep = istrazivanja
+
+
+
                 return@withContext istrazivanja
 
             }
@@ -106,6 +118,10 @@ class IstrazivanjeIGrupaRepository {
                     }
                 }
                 grupeRep = grupe
+                val db = AppDatabase.getInstance(context!!)
+                for(x in grupe){
+                    db.grupaDao().insert(x)
+                }
                 return@withContext grupe
             }
         }
@@ -202,6 +218,10 @@ class IstrazivanjeIGrupaRepository {
 
         fun getUpisanaIstrazivanja(): List<Istrazivanje> {
             return mojaIstrazivanja
+        }
+
+        fun setCont(_context: Context?) {
+            context = _context
         }
     }
 }

@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 data class Pitanje(
     val naziv: String,
     val tekstPitanja: String,
-    val opcije: List<String>,
-    @PrimaryKey val id: Int = 0,
+    val opcije: Int = 0,
+    @PrimaryKey() val id: Int = 0,
     val idAnkete: Int = 0) {
 }

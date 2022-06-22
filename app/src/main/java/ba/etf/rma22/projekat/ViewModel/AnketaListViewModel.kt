@@ -1,10 +1,18 @@
 package ba.etf.rma22.projekat.ViewModel
 
+import android.app.Application
+import android.content.Context
 import ba.etf.rma22.projekat.data.models.*
 import ba.etf.rma22.projekat.data.repositories.*
 import java.io.Serializable
 
-class AnketaListViewModel : Serializable{
+class AnketaListViewModel(application: Application) : Serializable{
+
+    val context = application.applicationContext
+    init {
+        val anketaDao = AppDatabase.getInstance(application.applicationContext).anketaDao()
+
+    }
 
     fun getMyAnkete():List<Anketa>{
         return AnketaRepository.getMyAnkete()
@@ -58,7 +66,6 @@ class AnketaListViewModel : Serializable{
         IstrazivanjeIGrupaRepository.getGrupe()
         IstrazivanjeIGrupaRepository.getIstrazivanja()
         IstrazivanjeIGrupaRepository.grupeSaIstrazivanjima()
-        AnketaRepository.popuniGrupeiIstrazivanje()
         for (x in IstrazivanjeIGrupaRepository.getUpisaneGrupe()){
             AnketaRepository.dodajMojeAnkete(x.naziv)
         }
@@ -82,6 +89,13 @@ class AnketaListViewModel : Serializable{
         odgovori.addAll(OdgovorRepository.odgovori)
         odgovori.addAll(OdgovorRepository.neposlaniOdgovori)
         return odgovori
+    }
+    fun postaviContext(){
+        AnketaRepository.setCont(context)
+        IstrazivanjeIGrupaRepository.setCont(context)
+        OdgovorRepository.setCont(context)
+        PitanjeAnketaRepository.setCont(context)
+        TakeAnketaRepository.setCont(context)
     }
 
 }
