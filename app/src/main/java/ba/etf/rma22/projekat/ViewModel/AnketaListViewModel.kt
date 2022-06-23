@@ -96,6 +96,16 @@ class AnketaListViewModel(application: Application) : Serializable{
         OdgovorRepository.setCont(context)
         PitanjeAnketaRepository.setCont(context)
         TakeAnketaRepository.setCont(context)
+        AccountRepository.setCont(context)
+    }
+    suspend fun ucitajIzBaze(){
+        val db = AppDatabase.getInstance(context)
+        IstrazivanjeIGrupaRepository.istrazivanjaRep = db.istrazivanjeDao().getAll() as ArrayList<Istrazivanje>
+        IstrazivanjeIGrupaRepository.grupeRep = db.grupaDao().getAll() as ArrayList<Grupa>
+        AnketaRepository.sveAnkete = db.anketaDao().getAll() as ArrayList<Anketa>
+        TakeAnketaRepository.poceteAnkete = db.takeAnketaDao().getAll() as ArrayList<AnketaTaken>
+        PitanjeAnketaRepository.svaPitanja = db.pitanjeDao().getAll() as ArrayList<Pitanje>
+        OdgovorRepository.odgovori = db.odgovorDao().getAll() as ArrayList<Odgovor>
     }
 
 }

@@ -1,6 +1,9 @@
 package ba.etf.rma22.projekat.data.repositories
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import ba.etf.rma22.projekat.data.models.Anketa
 import ba.etf.rma22.projekat.data.models.AppDatabase
 import ba.etf.rma22.projekat.data.models.Grupa
@@ -150,25 +153,28 @@ class IstrazivanjeIGrupaRepository {
         }
 
         suspend fun upisiUGrupu(idGrupa: Int): Boolean {
-            return withContext(Dispatchers.IO) {
-                val url1 =
-                    ApiConfig.baseURL + "/grupa/$idGrupa" + "/student/" + AccountRepository.acHash
-                val url = URL(url1)
-                val con = (url.openConnection() as? HttpURLConnection)
-                if (con != null) {
-                    con.requestMethod = "POST"
-                };
-                con?.run {
-                    val result = this.inputStream.bufferedReader().use { it.readText() }
-                    val message = JSONObject(result).getString("message")
-                    if (message.equals("Grupa not found."))
-                        return@withContext false
+            if(isNetworkAvailable(context)) {
+                return withContext(Dispatchers.IO) {
+                    val url1 =
+                        ApiConfig.baseURL + "/grupa/$idGrupa" + "/student/" + AccountRepository.acHash
+                    val url = URL(url1)
+                    val con = (url.openConnection() as? HttpURLConnection)
+                    if (con != null) {
+                        con.requestMethod = "POST"
+                    };
+                    con?.run {
+                        val result = this.inputStream.bufferedReader().use { it.readText() }
+                        val message = JSONObject(result).getString("message")
+                        if (message.equals("Grupa not found."))
+                            return@withContext false
 
+                    }
+                    getUpisaneGrupe()
+                    grupeSaIstrazivanjima()
+                    return@withContext true
                 }
-                getUpisaneGrupe()
-                grupeSaIstrazivanjima()
-                return@withContext true
             }
+            return false
         }
 
         suspend fun getUpisaneGrupe(): List<Grupa> {
@@ -222,6 +228,32 @@ class IstrazivanjeIGrupaRepository {
 
         fun setCont(_context: Context?) {
             context = _context
+        }
+        fun isNetworkAvailable(context: Context?): Boolean {
+            if (context == null) return false
+            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+                if (capabilities != null) {
+                    when {
+                        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
+                            return true
+                        }
+                        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
+                            return true
+                        }
+                        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
+                            return true
+                        }
+                    }
+                }
+            } else {
+                val activeNetworkInfo = connectivityManager.activeNetworkInfo
+                if (activeNetworkInfo != null && activeNetworkInfo.isConnected) {
+                    return true
+                }
+            }
+            return false
         }
     }
 }

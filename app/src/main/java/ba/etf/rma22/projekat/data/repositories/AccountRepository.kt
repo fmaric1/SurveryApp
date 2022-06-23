@@ -13,7 +13,7 @@ import java.net.URL
 
 class AccountRepository {
     companion object{
-        var activity: Context? = null
+        var context: Context? = null
         var acHash : String = BuildConfig.HASH_KEY
         fun postaviHash(acHash: String):Boolean {
             this.acHash = acHash
@@ -23,8 +23,8 @@ class AccountRepository {
             return acHash
         }
 
-        fun setContext(_activity: Context?) {
-            activity = _activity
+        fun setCont(_context: Context?) {
+            context = _context
         }
 
 

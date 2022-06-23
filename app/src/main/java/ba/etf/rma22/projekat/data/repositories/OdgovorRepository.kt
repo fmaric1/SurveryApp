@@ -1,6 +1,9 @@
 package ba.etf.rma22.projekat.data.repositories
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import ba.etf.rma22.projekat.data.models.AppDatabase
 import ba.etf.rma22.projekat.data.models.Odgovor
 import kotlinx.coroutines.Dispatchers
@@ -15,8 +18,8 @@ import java.net.URL
 
 class OdgovorRepository {
     companion object {
-        val odgovori = ArrayList<Odgovor>()
-        val neposlaniOdgovori = ArrayList<Odgovor>()
+        var odgovori = ArrayList<Odgovor>()
+        var neposlaniOdgovori = ArrayList<Odgovor>()
         var context: Context? = null
         fun setCont(_context: Context?) {
             context = _context
@@ -63,57 +66,63 @@ class OdgovorRepository {
         }
 
         suspend fun postaviOdgovorAnketa(idAnketaTaken: Int, idPitanje: Int, odgovor: Int): Int {
-            return withContext(Dispatchers.IO) {
+            if(isNetworkAvailable(context)) {
+                return withContext(Dispatchers.IO) {
 
-                val db = AppDatabase.getInstance(context!!)
-                db.odgovorDao().insert(Odgovor(idPitanje,odgovor,idAnketaTaken))
+                    val db = AppDatabase.getInstance(context!!)
+                    db.odgovorDao().insert(Odgovor(idPitanje, odgovor, idAnketaTaken))
 
-                val url1 = ApiConfig.baseURL + "/student/" + AccountRepository.acHash + "/anketataken/$idAnketaTaken/odgovor"
-                val url = URL(url1)
-                val con = (url.openConnection() as HttpURLConnection)
-                con.requestMethod = "POST";
-                con.setRequestProperty("Content-Type", "application/json")
-                con.setRequestProperty("Accept", "application/json")
-                con.doOutput = true;
-                val ankete  = TakeAnketaRepository.getPoceteAnkete()
-                var idAnkete = 0
-                if(ankete != null)
-                for(x in ankete){
-                    if(idAnketaTaken == x.id)
-                        idAnkete = x.AnketumId
-                }
-                val brojPitanja = PitanjeAnketaRepository.getPitanja(idAnkete).size
-                val progress = ((getOdgovoriAnketa(idAnketaTaken).size.toDouble() + 1.0)/ brojPitanja)
-                var progressInt = 0
-                if(progress<0.1)
-                    progressInt = 0
-                else if(progress>=0.1 && progress<0.3)
-                    progressInt = 20
-                else if(progress>=0.3 && progress<0.5)
-                    progressInt = 40
-                else if(progress>=0.5 && progress<0.7)
-                    progressInt = 60
-                else if(progress>=0.7 && progress<1.0)
-                    progressInt = 80
-                else if(progress>=1.0)
-                    progressInt = 100
-                val jsonInputString = "{\"odgovor\": \"$odgovor\", \"pitanje\": \"$idPitanje\", \"progres\": \"$progress\"}"
-                con.outputStream.use { os ->
-                    val input = jsonInputString.toByteArray(charset("utf-8"))
-                    os.write(input, 0, input.size)
-                }
-                BufferedReader(
-                    InputStreamReader(con.inputStream, "utf-8")
-                ).use { br ->
-                    val response = StringBuilder()
-                    var responseLine: String? = null
-                    while (br.readLine().also({ responseLine = it }) != null) {
-                        response.append(responseLine!!.trim { it <= ' ' })
+                    val url1 =
+                        ApiConfig.baseURL + "/student/" + AccountRepository.acHash + "/anketataken/$idAnketaTaken/odgovor"
+                    val url = URL(url1)
+                    val con = (url.openConnection() as HttpURLConnection)
+                    con.requestMethod = "POST";
+                    con.setRequestProperty("Content-Type", "application/json")
+                    con.setRequestProperty("Accept", "application/json")
+                    con.doOutput = true;
+                    val ankete = TakeAnketaRepository.getPoceteAnkete()
+                    var idAnkete = 0
+                    if (ankete != null)
+                        for (x in ankete) {
+                            if (idAnketaTaken == x.id)
+                                idAnkete = x.AnketumId
+                        }
+                    val brojPitanja = PitanjeAnketaRepository.getPitanja(idAnkete).size
+                    val progress =
+                        ((getOdgovoriAnketa(idAnketaTaken).size.toDouble() + 1.0) / brojPitanja)
+                    var progressInt = 0
+                    if (progress < 0.1)
+                        progressInt = 0
+                    else if (progress >= 0.1 && progress < 0.3)
+                        progressInt = 20
+                    else if (progress >= 0.3 && progress < 0.5)
+                        progressInt = 40
+                    else if (progress >= 0.5 && progress < 0.7)
+                        progressInt = 60
+                    else if (progress >= 0.7 && progress < 1.0)
+                        progressInt = 80
+                    else if (progress >= 1.0)
+                        progressInt = 100
+                    val jsonInputString =
+                        "{\"odgovor\": \"$odgovor\", \"pitanje\": \"$idPitanje\", \"progres\": \"$progress\"}"
+                    con.outputStream.use { os ->
+                        val input = jsonInputString.toByteArray(charset("utf-8"))
+                        os.write(input, 0, input.size)
                     }
-                    println(response.toString())
+                    BufferedReader(
+                        InputStreamReader(con.inputStream, "utf-8")
+                    ).use { br ->
+                        val response = StringBuilder()
+                        var responseLine: String? = null
+                        while (br.readLine().also({ responseLine = it }) != null) {
+                            response.append(responseLine!!.trim { it <= ' ' })
+                        }
+                        println(response.toString())
+                    }
+                    return@withContext progressInt
                 }
-                return@withContext progressInt
             }
+            return 0
 
         }
 
@@ -134,7 +143,31 @@ class OdgovorRepository {
             }
             neposlaniOdgovori.clear()
         }
-
-
+        fun isNetworkAvailable(context: Context?): Boolean {
+            if (context == null) return false
+            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+                if (capabilities != null) {
+                    when {
+                        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
+                            return true
+                        }
+                        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
+                            return true
+                        }
+                        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
+                            return true
+                        }
+                    }
+                }
+            } else {
+                val activeNetworkInfo = connectivityManager.activeNetworkInfo
+                if (activeNetworkInfo != null && activeNetworkInfo.isConnected) {
+                    return true
+                }
+            }
+            return false
+        }
     }
 }
